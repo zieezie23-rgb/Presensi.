@@ -24,21 +24,21 @@ body{margin:0;background:var(--idm-bg)!important;color:var(--idm-ink)!important;
 #root{min-height:100vh}
 button{transition:all .16s ease}
 .idm-shell{min-height:100vh;background:#fff}
-.idm-brandbar{min-height:82px;background:linear-gradient(180deg,#df1118 0%,#c90008 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:8px 24px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.idm-brandbar{min-height:56px;background:linear-gradient(180deg,#df1118 0%,#c90008 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-blue) 0 72%,var(--idm-yellow) 72% 100%)}
-.idm-logo{width:154px;height:58px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
-.idm-logo:before{content:"Indomaret";font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:21px;color:#005baa;background:#fff;border:2px solid #005baa;border-radius:50%;padding:3px 12px;line-height:1;white-space:nowrap}
-.idm-brand-title{margin-left:18px;color:#fff;line-height:1.08}
-.idm-brand-title h1{margin:0;font-size:24px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
-.idm-brand-title p{margin:5px 0 0;font-size:14px;font-weight:500}
+.idm-logo{width:106px;height:42px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
+.idm-logo:before{content:"Indomaret";font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:15px;color:#005baa;background:#fff;border:2px solid #005baa;border-radius:50%;padding:3px 12px;line-height:1;white-space:nowrap}
+.idm-brand-title{margin-left:12px;color:#fff;line-height:1.08}
+.idm-brand-title h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
+.idm-brand-title p{margin:2px 0 0;font-size:10px;font-weight:500}
 .idm-top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
 .idm-top-actions button{border:0!important;box-shadow:none!important}
-.idm-nav{height:60px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
-.idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:60px;padding:0 21px!important;border-radius:0!important;transform:none!important;font-size:14px!important;font-weight:600!important}
+.idm-nav{height:44px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
+.idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:44px;padding:0 15px!important;border-radius:0!important;transform:none!important;font-size:11px!important;font-weight:600!important}
 .idm-nav button:hover{color:var(--idm-red)!important}
 .idm-nav button.idm-active{color:var(--idm-red)!important}
-.idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:4px;background:var(--idm-red);border-radius:4px 4px 0 0}
-.idm-content{max-width:none;width:100%;margin:0;padding:10px 10px 10px}
+.idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--idm-red);border-radius:4px 4px 0 0}
+.idm-content{max-width:none;width:100%;margin:0;padding:7px 10px 10px}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
 .idm-period strong{color:#1f2937;font-size:13px}
 /* Rekap table: compact, single-line, strong grid */
@@ -80,7 +80,7 @@ button{transition:all .16s ease}
   white-space: nowrap !important;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: none;
 }
 .rekap-table .kode-text {
   display: inline;
@@ -141,6 +141,12 @@ button{transition:all .16s ease}
 @media(max-height:700px){.rekap-table-wrap{height:calc(100vh - 150px)!important;max-height:calc(100vh - 150px)!important}}
 
 
+
+.pelanggaran-table th,.pelanggaran-table td{font-size:9px!important;line-height:1.2!important}
+.pelanggaran-table input{font-size:9px!important}
+@media(max-width:900px){.idm-brandbar{min-height:50px;padding:3px 10px}.idm-logo{width:86px;height:36px}.idm-logo:before{font-size:12px;padding:2px 7px}.idm-brand-title h1{font-size:15px}.idm-brand-title p{font-size:9px}.idm-nav{height:40px}.idm-nav button{height:40px;padding:0 10px!important;font-size:10px!important}.idm-top-actions{gap:4px}.idm-top-actions button{padding:5px 7px!important;font-size:10px!important}}
+
+.upload-success{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 auto 7px;padding:5px 10px;width:max-content;max-width:100%;border:1px solid #bbf7d0;border-radius:7px;background:#f0fdf4;color:#166534;font-size:11px;font-weight:600}
 /* common UI */
 .rounded-lg,.rounded-2xl{box-shadow:0 2px 8px rgba(31,41,55,.06)}
 .border-slate-200,.border-slate-300{border-color:#d7dee7!important}
@@ -363,8 +369,10 @@ function deriveCode(status, masuk, shiftCode) {
     if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
       const total = parts[0] * 60 + parts[1];
       const info = shiftInfoFor(shiftCode);
-      const threshold = info ? toMinutes(info.masuk) : LATE_THRESHOLD_MIN;
-      if (total > threshold) return { code: 'DT', lateMin: total - threshold };
+      const scheduled = info ? toMinutes(info.masuk) : LATE_THRESHOLD_MIN;
+      // Dianggap telat hanya jika lebih dari 60 menit dari jadwal masuk.
+      const threshold = scheduled + 60;
+      if (total > threshold) return { code: 'DT', lateMin: total - scheduled };
       return { code: 'OK' };
     }
     return { code: 'OK' };
@@ -574,7 +582,15 @@ function RekapTab({ data, onSelectEmployee }) {
     return WEEKDAY_ID[new Date(data.year, data.monthNum - 1, d).getDay()];
   };
 
-  const NAMA_W = 130, NIK_W = 40, BAGIAN_W = 40;
+  const measureTextWidth = (text, font = '9px IBM Plex Sans') => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = font;
+    return Math.ceil(ctx.measureText(String(text || '')).width) + 2;
+  };
+  const NAMA_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nama, '9px IBM Plex Sans')));
+  const NIK_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nik, '9px IBM Plex Mono')));
+  const BAGIAN_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.bagian || '—', '9px IBM Plex Sans')));
   const NIK_LEFT = NAMA_W, BAGIAN_LEFT = NAMA_W + NIK_W;
 
   // Sort bertingkat: total pelanggaran(z-a) -> avg(z-a) -> hadir(a-z) -> off(z-a) -> sakit(z-a) -> cuti(z-a) -> nama(a-z)
@@ -714,14 +730,25 @@ function RekapTab({ data, onSelectEmployee }) {
 /*  Rincian Pelanggaran tab                                                 */
 /* ---------------------------------------------------------------------- */
 
-function PelanggaranTab({ data, onSelectEmployee }) {
+function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
   const rows = useMemo(() => {
     const out = [];
     data.employees.forEach((emp) => {
       for (let d = 1; d <= data.monthLength; d++) {
         const rec = emp.days[d];
-        if (!rec || !PELANGGARAN_CODES.includes(rec.code)) continue;
-        out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d });
+        if (!rec || !PELANGGARAN_CODES.includes(rec.code) || rec.sudahDijelaskan) continue;
+        const info = shiftInfoFor(rec.shift);
+        out.push({
+          ...rec,
+          nik: emp.nik,
+          nama: emp.nama,
+          bagian: emp.bagian || '',
+          day: d,
+          masukSeharusnya: info?.masuk || '—',
+          pulangSeharusnya: info?.pulang || '—',
+          jenis: CODE_META[rec.code]?.label || rec.status || rec.code,
+          keterangan: rec.code === 'M' ? 'Mangkir' : rec.code === 'LAM' ? 'Lupa Absen Masuk' : 'Lupa Absen Pulang',
+        });
       }
     });
     out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
@@ -731,76 +758,95 @@ function PelanggaranTab({ data, onSelectEmployee }) {
   const tanggalLabel = (d) => {
     if (!data.year || !data.monthNum) return String(d);
     const dt = new Date(data.year, data.monthNum - 1, d);
-    return `${WEEKDAY_FULL_ID[dt.getDay()]}, ${String(d).padStart(2, '0')} ${MONTH_ID[Object.keys(MONTH_NUM).find((k) => MONTH_NUM[k] === data.monthNum)] || ''} ${data.year}`;
-  };
-
-  const downloadCsv = () => {
-    const head = ['No', 'NIK', 'Nama', 'Shift', 'Jam Masuk', 'Jam Pulang', 'Tanggal', 'Keterangan'];
-    const lines = [head.join(',')];
-    rows.forEach((r, idx) => {
-      lines.push([
-        idx + 1, r.nik, `"${r.nama}"`, r.shift,
-        r.masuk, r.pulang, `"${tanggalLabel(r.day)}"`,
-        `"${CODE_META[r.code]?.label || r.status}"`,
-      ].join(','));
-    });
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `rincian-pelanggaran-${(data.monthLabelId || '').replace(' ', '-').toLowerCase()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    return `${String(d).padStart(2, '0')} ${MONTH_ID[Object.keys(MONTH_NUM).find((k) => MONTH_NUM[k] === data.monthNum)] || ''} ${data.year}`;
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-slate-500">{rows.length} pelanggaran tercatat</p>
-        <button
-          onClick={downloadCsv}
-          className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          <Download size={13} /> Unduh CSV
-        </button>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-slate-500">{rows.length} pelanggaran belum dijelaskan</p>
       </div>
-
-      <div className="rounded-lg border-2 border-slate-300 overflow-auto" style={{ maxHeight: '70vh' }}>
-        <table className="w-full text-[12px] border-collapse" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      <div className="rounded-lg border border-slate-300 overflow-auto" style={{ maxHeight: '70vh' }}>
+        <table className="w-full text-[10px] border-collapse pelanggaran-table" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
           <thead>
-            <tr className="bg-slate-900 text-white">
-              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">No</th>
-              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">NIK</th>
-              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Nama</th>
-              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Shift</th>
-              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Masuk</th>
-              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Pulang</th>
-              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Tanggal</th>
-              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Keterangan</th>
+            <tr className="bg-blue-700 text-white">
+              {[
+                ['No','text-center'], ['NIK','text-center'], ['Nama','text-left'], ['Shift','text-center'],
+                ['Masuk Seharusnya','text-center'], ['Pulang Seharusnya','text-center'], ['Masuk Aktual','text-center'], ['Pulang Aktual','text-center'],
+                ['Tanggal','text-center'], ['Jenis','text-center'], ['Keterangan','text-left'], ['Penjelasan Karyawan','text-left'], ['Aksi','text-center']
+              ].map(([h, align]) => (
+                <th key={h} className={`sticky top-0 z-10 bg-blue-700 ${align} px-1.5 py-1 font-semibold whitespace-nowrap border border-blue-500`}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => (
-              <tr key={`${r.nik}-${r.day}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500">{idx + 1}</td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.nik}</td>
-                <td
-                  className="px-2.5 py-1.5 border-t border-slate-300 font-medium text-slate-800 cursor-pointer hover:underline"
-                  onClick={() => onSelectEmployee(r.nik)}
-                >
-                  {r.nama}
-                </td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500">{r.shift || '—'}</td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.masuk && r.masuk !== '00:00' ? r.masuk : '—'}</td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.pulang && r.pulang !== '00:00' ? r.pulang : '—'}</td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500">{tanggalLabel(r.day)}</td>
-                <td className="px-2.5 py-1.5 border-t border-slate-300">
-                  <Badge code={r.code} /> <span className="text-slate-500 ml-1">{CODE_META[r.code]?.label}</span>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr><td colSpan={8} className="text-center text-slate-400 py-8">Tidak ada pelanggaran pada periode ini.</td></tr>
-            )}
+            {rows.map((r, idx) => <ViolationRow key={`${r.nik}-${r.day}`} row={r} idx={idx} tanggalLabel={tanggalLabel} onSelectEmployee={onSelectEmployee} onExplain={onExplain} />)}
+            {rows.length === 0 && <tr><td colSpan={13} className="text-center text-slate-400 py-8">Tidak ada pelanggaran yang belum dijelaskan.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
+  const [text, setText] = useState('');
+  const canSave = text.trim().length > 0;
+  return (
+    <tr className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500">{idx + 1}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.nik}</td>
+      <td className="px-1.5 py-1 border border-slate-200 font-medium text-slate-800 cursor-pointer hover:underline whitespace-nowrap" onClick={() => onSelectEmployee(row.nik)}>{row.nama}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.shift || '—'}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.masukSeharusnya}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.pulangSeharusnya}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.masuk && row.masuk !== '00:00' ? row.masuk : '—'}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 font-mono">{row.pulang && row.pulang !== '00:00' ? row.pulang : '—'}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center text-slate-500 whitespace-nowrap">{tanggalLabel(row.day)}</td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center"><Badge code={row.code} /></td>
+      <td className="px-1.5 py-1 border border-slate-200 text-slate-600 whitespace-nowrap">{row.keterangan}</td>
+      <td className="px-1.5 py-1 border border-slate-200 min-w-[220px]">
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Isi penjelasan…" className="w-full text-[10px] px-1.5 py-1 rounded border border-slate-200 outline-none focus:ring-1 focus:ring-blue-300" />
+      </td>
+      <td className="px-1.5 py-1 border border-slate-200 text-center">
+        <button disabled={!canSave} onClick={() => onExplain(row.nik, row.day, text.trim())} className="rounded px-2 py-1 text-[10px] font-semibold text-white disabled:opacity-40" style={{ backgroundColor:'#005baa' }}>Simpan</button>
+      </td>
+    </tr>
+  );
+}
+
+function SudahDijelaskanTab({ data, onSelectEmployee }) {
+  const rows = useMemo(() => {
+    const out = [];
+    data.employees.forEach((emp) => {
+      for (let d = 1; d <= data.monthLength; d++) {
+        const rec = emp.days[d];
+        if (!rec || !PELANGGARAN_CODES.includes(rec.code) || !rec.sudahDijelaskan) continue;
+        const info = shiftInfoFor(rec.shift);
+        out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d, masukSeharusnya: info?.masuk || '—', pulangSeharusnya: info?.pulang || '—' });
+      }
+    });
+    out.sort((a,b) => a.day-b.day || a.nik.localeCompare(b.nik));
+    return out;
+  }, [data]);
+  return (
+    <div>
+      <div className="mb-2 text-xs text-slate-500">{rows.length} pelanggaran sudah dijelaskan</div>
+      <div className="rounded-lg border border-slate-300 overflow-auto" style={{maxHeight:'70vh'}}>
+        <table className="w-full text-[10px] border-collapse">
+          <thead><tr className="bg-emerald-700 text-white">
+            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} className={`sticky top-0 bg-emerald-700 px-1.5 py-1 border border-emerald-500 font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {rows.map((r,i)=><tr key={`${r.nik}-${r.day}`} className={i%2===0?'bg-white':'bg-slate-50'}>
+              <td className="px-1.5 py-1 border border-slate-200 text-center">{i+1}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.nik}</td>
+              <td className="px-1.5 py-1 border border-slate-200 font-medium cursor-pointer" onClick={()=>onSelectEmployee(r.nik)}>{r.nama}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.shift||'—'}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masukSeharusnya}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulangSeharusnya}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masuk&&r.masuk!=='00:00'?r.masuk:'—'}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulang&&r.pulang!=='00:00'?r.pulang:'—'}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center whitespace-nowrap">{String(r.day).padStart(2,'0')}</td><td className="px-1.5 py-1 border border-slate-200 text-center"><Badge code={r.code}/></td>
+              <td className="px-1.5 py-1 border border-slate-200 text-slate-600">{r.penjelasan}</td>
+            </tr>)}
+            {rows.length===0&&<tr><td colSpan={11} className="text-center text-slate-400 py-8">Belum ada pelanggaran yang dijelaskan.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -1119,6 +1165,15 @@ const sheetsApi = {
 
 // Cache lokal (localStorage) — hanya sebagai fallback offline / kalau Apps
 // Script belum dikonfigurasi. Sumber kebenaran utama tetap Google Sheets.
+async function openDatabaseSpreadsheet() {
+  try {
+    const res = await sheetsApi.get('getSpreadsheetUrl');
+    if (res && res.url) { window.open(res.url, '_blank', 'noopener,noreferrer'); return; }
+  } catch (e) {}
+  // Fallback: arahkan ke Google Sheets jika backend belum menyediakan URL database.
+  window.open('https://docs.google.com/spreadsheets/', '_blank', 'noopener,noreferrer');
+}
+
 const localCache = {
   get(key) { try { return window.localStorage.getItem(key); } catch (e) { return null; } },
   set(key, value) { try { window.localStorage.setItem(key, value); } catch (e) { /* penuh/diblokir */ } },
@@ -1147,6 +1202,7 @@ function App() {
   const [error, setError] = useState(null);
   const [initLoading, setInitLoading] = useState(true);
   const [syncError, setSyncError] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -1241,6 +1297,35 @@ function App() {
     });
   }, [persistEmployeeDb]);
 
+  const saveDatasetToDatabase = useCallback(async (nextData) => {
+    const period = periodKeyOf(nextData);
+    if (!period || !sheetsApi.configured()) return;
+    await sheetsApi.post('savePeriod', {
+      period,
+      label: nextData.monthLabelId || period,
+      value: JSON.stringify(nextData),
+      lastDataDay: computeLastDataDay(nextData),
+    });
+  }, []);
+
+  const handleExplain = useCallback(async (nik, day, explanation) => {
+    if (!data || !explanation) return;
+    const next = {
+      ...data,
+      employees: data.employees.map((emp) => emp.nik !== nik ? emp : {
+        ...emp,
+        days: { ...emp.days, [day]: { ...emp.days[day], penjelasan: explanation, sudahDijelaskan: true } }
+      })
+    };
+    setData(next);
+    localCache.set('lhpk:dataset', JSON.stringify(next));
+    try {
+      await saveDatasetToDatabase(next);
+    } catch (e) {
+      setSyncError('Penjelasan tersimpan di aplikasi, tetapi gagal disimpan ke Google Sheets.');
+    }
+  }, [data, saveDatasetToDatabase]);
+
   const handleFile = useCallback(async (file) => {
     setBusy(true); setError(null); setSyncError(null);
     try {
@@ -1255,6 +1340,20 @@ function App() {
           const existing = await sheetsApi.get('getPeriod', { period });
           if (existing.value) {
             const existingParsed = JSON.parse(existing.value);
+            // Pertahankan penjelasan yang sudah diisi ketika file periode yang sama di-upload ulang.
+            if (existingParsed.employees) {
+              const oldMap = new Map(existingParsed.employees.map(e => [e.nik, e]));
+              parsed.employees.forEach(emp => {
+                const oldEmp = oldMap.get(emp.nik);
+                if (!oldEmp) return;
+                Object.keys(emp.days || {}).forEach(d => {
+                  const oldRec = oldEmp.days?.[d];
+                  if (oldRec?.sudahDijelaskan && oldRec?.penjelasan) {
+                    emp.days[d] = { ...emp.days[d], penjelasan: oldRec.penjelasan, sudahDijelaskan: true };
+                  }
+                });
+              });
+            }
             const existingLastDay = computeLastDataDay(existingParsed);
             if (newLastDay < existingLastDay) {
               const proceed = window.confirm(
@@ -1282,9 +1381,14 @@ function App() {
             value: JSON.stringify(parsed),
             lastDataDay: newLastDay,
           });
+          setUploadSuccess(true);
+          window.setTimeout(() => setUploadSuccess(false), 3000);
         } catch (saveErr) {
           setSyncError('Data tampil tapi gagal tersimpan ke Google Sheets — cek koneksi/URL Apps Script.');
         }
+      } else {
+        setUploadSuccess(true);
+        window.setTimeout(() => setUploadSuccess(false), 3000);
       }
     } catch (e) {
       setError(e.message || 'Gagal membaca file. Pastikan formatnya sesuai export LHPK.');
@@ -1306,27 +1410,30 @@ function App() {
           <h1>REKAP PRESENSI</h1>
           <p>Rekap Presensi Karyawan</p>
         </div>
-        {tab !== 'karyawan' && (
+        {(
           <div className="idm-top-actions">
             <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
             <button onClick={() => fileInputRef.current?.click()} disabled={busy}
-              className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
               style={{ backgroundColor:'#005baa' }}>
               {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD LHPK
             </button>
             {data && (
               <>
                 <button onClick={() => window.location.reload()}
-                  className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
                   style={{ backgroundColor:'#fff',color:'#374151' }}>
                   <RefreshCw size={15}/> REFRESH
                 </button>
                 <button onClick={() => document.querySelector('[data-download-csv]')?.click()}
-                  className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
                   style={{ backgroundColor:'#ffd100',color:'#111827' }}>
                   <Download size={15}/> EXPORT
                 </button>
+                        <button onClick={openDatabaseSpreadsheet} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
+                  className="inline-flex items-center justify-center rounded-md px-2.5 py-2.5 text-white"
+                  style={{ backgroundColor:'#d71920' }}>⚙</button>
               </>
             )}
           </div>
@@ -1338,7 +1445,7 @@ function App() {
           { id: 'rekap', label: 'REKAP PRESENSI', icon: Users },
           { id: 'pelanggaran', label: 'RINCIAN PELANGGARAN', icon: AlertTriangle },
           { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
-          { id: 'karyawan', label: 'DATABASE KARYAWAN', icon: UserCog },
+          { id: 'dijelaskan', label: 'SUDAH DIJELASKAN', icon: CheckCircle2 },
         ].map((t) => {
           const Icon = t.icon;
           const active = tab === t.id;
@@ -1348,12 +1455,12 @@ function App() {
             </button>
           );
         })}
-        <button onClick={() => setTab(tab)} className="ml-auto" title="Pengaturan tampilan">
-          <span className="inline-flex items-center gap-2"><span style={{fontSize:16}}>⚙</span> PENGATURAN</span>
-        </button>
       </div>
 
       <div className="idm-content">
+        {uploadSuccess && (
+          <div className="upload-success"><CheckCircle2 size={14} /> Upload berhasil — data tersimpan ke database.</div>
+        )}
         {data && (
           <div className="idm-period">
             <div><strong>{data.monthLabelId || 'Periode tidak diketahui'}</strong>{data.meta?.cabang ? `  ·  ${data.meta.cabang}` : ''}{data.meta?.divisi ? `  ·  ${data.meta.divisi}` : ''}</div>
@@ -1377,10 +1484,7 @@ function App() {
           </div>
         )}
 
-        {tab === 'karyawan' && (
-          <KaryawanTab employeeDb={employeeDb} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />
-        )}
-        {tab !== 'karyawan' && !data && (
+        {!data && (
           <div className="flex flex-col items-center justify-center text-center py-16 text-slate-400">
             <FileWarning size={28} className="mb-3" />
             <p className="text-sm font-medium text-slate-500">Belum ada data presensi</p>
@@ -1391,7 +1495,10 @@ function App() {
           <RekapTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
         )}
         {tab === 'pelanggaran' && data && (
-          <PelanggaranTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
+          <PelanggaranTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} onExplain={handleExplain} />
+        )}
+        {tab === 'dijelaskan' && data && (
+          <SudahDijelaskanTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
         )}
         {tab === 'detail' && data && (
           <DetailTab data={filteredData} selectedNik={selectedNik} onSelectEmployee={setSelectedNik} />
