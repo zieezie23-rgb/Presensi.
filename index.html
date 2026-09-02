@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rekap Presensi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-is/16.13.1/umd/react-is.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/3.10.1/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  body { margin: 0; }
+</style>
+
+<style id="indomaret-premium-theme">
+:root{--idm-red:#d71920;--idm-blue:#005baa;--idm-yellow:#ffd100;--idm-navy:#06479f;--idm-ink:#1f2937;--idm-bg:#f4f6f8;--idm-line:#8d99a6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--idm-bg)!important;color:var(--idm-ink)!important;font-family:'IBM Plex Sans',Arial,sans-serif!important}
+#root{min-height:100vh}
+button{transition:all .16s ease}
+.idm-shell{min-height:100vh;background:#fff}
+.idm-brandbar{min-height:82px;background:linear-gradient(180deg,#df1118 0%,#c90008 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:8px 24px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-blue) 0 72%,var(--idm-yellow) 72% 100%)}
+.idm-logo{width:154px;height:58px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
+.idm-logo:before{content:"Indomaret";font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:21px;color:#005baa;background:#fff;border:2px solid #005baa;border-radius:50%;padding:3px 12px;line-height:1;white-space:nowrap}
+.idm-brand-title{margin-left:18px;color:#fff;line-height:1.08}
+.idm-brand-title h1{margin:0;font-size:24px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
+.idm-brand-title p{margin:5px 0 0;font-size:14px;font-weight:500}
+.idm-top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.idm-top-actions button{border:0!important;box-shadow:none!important}
+.idm-nav{height:60px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
+.idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:60px;padding:0 21px!important;border-radius:0!important;transform:none!important;font-size:14px!important;font-weight:600!important}
+.idm-nav button:hover{color:var(--idm-red)!important}
+.idm-nav button.idm-active{color:var(--idm-red)!important}
+.idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:4px;background:var(--idm-red);border-radius:4px 4px 0 0}
+.idm-content{max-width:none;width:100%;margin:0;padding:10px 10px 10px}
+.idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
+.idm-period strong{color:#1f2937;font-size:13px}
+/* Rekap table: compact, single-line, strong grid */
+.rekap-table {
+  width:100% !important;
+  font-size: 9px !important;
+  border-collapse: collapse !important;
+}
+.rekap-table th, .rekap-table td {
+  border: 1px solid #94a3b8 !important;
+  white-space: nowrap !important;
+}
+.rekap-table th {
+  font-size: 9px !important;
+  padding: 2px 1px !important;
+  line-height: 1.15 !important;
+}
+.rekap-table td {
+  font-size: 9px !important;
+  padding: 0 !important;
+  line-height: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  box-sizing: border-box !important;
+}
+.rekap-table tbody tr {
+  height: 20px !important;
+  min-height: 20px !important;
+}
+.rekap-table tbody td {
+  height: 18px !important;
+  max-height: 18px !important;
+  box-sizing: border-box !important;
+}
+.rekap-table th {
+  box-sizing: border-box !important;
+}
+.rekap-table .nama-cell {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+.rekap-table .kode-text {
+  display: inline;
+  font-weight: 700;
+  font-size: 8px;
+  line-height: 1;
+}
+/* Spreadsheet-style status cells: color fills the whole cell, no bubble. */
+.rekap-table .status-cell {
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  padding: 0 !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  line-height: 20px !important;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 700;
+}
+.rekap-table .status-cell.status-blank { background: #fff !important; color: #111827; }
+.rekap-table .status-cell.status-OK { background: #fff !important; color: #111827; }
+.rekap-table .status-cell.status-DT { background: #f5d0fe !important; color: #c026d3 !important; }
+.rekap-table .status-cell.status-OFF { background: #ffd9d9 !important; color: #ef1111 !important; }
+.rekap-table .status-cell.status-S { background: #ffedd5 !important; color: #c2410c !important; }
+.rekap-table .status-cell.status-C { background: #dcfce7 !important; color: #16a34a !important; }
+.rekap-table .status-cell.status-M { background: #ffb3b3 !important; color: #b91c1c !important; }
+.rekap-table .status-cell.status-LAM,
+.rekap-table .status-cell.status-LAP { background: #ffe4e6 !important; color: #dc2626 !important; }
+.rekap-table .status-cell.status-IDT,
+.rekap-table .status-cell.status-DL,
+.rekap-table .status-cell.status-IP { background: #cffafe !important; color: #0891b2 !important; }
+.rekap-table .status-cell .kode-text { color: inherit !important; }
+/* Make summary columns visually distinct without pill/bubble UI. */
+.rekap-table td[class*="sum-"] {
+  width: 25px !important;
+  min-width: 25px !important;
+  max-width: 25px !important;
+  padding: 0 !important;
+  line-height: 18px !important;
+  height: 18px !important;
+}
+.rekap-table .sum-OK { color:#111827 !important; background:#fff !important; }
+.rekap-table .sum-OFF { color:#ef1111 !important; background:#fff7f7 !important; }
+.rekap-table .sum-S { color:#c2410c !important; background:#fffaf5 !important; }
+.rekap-table .sum-C { color:#16a34a !important; background:#f6fff8 !important; }
+.rekap-table .sum-IDT { color:#0891b2 !important; background:#f2feff !important; }
+.rekap-table .sum-Pel { color:#b45309 !important; background:#fffaf0 !important; }
+.rekap-table .sum-LAM,
+.rekap-table .sum-LAP { color:#dc2626 !important; background:#fff7f8 !important; }
+.rekap-table .sum-M { color:#b91c1c !important; background:#fff0f0 !important; }
+.rekap-table .sum-DT { color:#c026d3 !important; background:#fff7ff !important; }
+.rekap-table .sum-Minutes,
+.rekap-table .sum-AVG { color:#334155 !important; background:#fafafa !important; }
+.rekap-table tbody tr:hover td:not(.status-cell) { background:#f8fafc !important; }
+.rekap-table-wrap{width:100%;}
+.rekap-table-wrap table{min-width:max-content;}
+@media(max-height:700px){.rekap-table-wrap{height:calc(100vh - 150px)!important;max-height:calc(100vh - 150px)!important}}
+
+
+/* common UI */
+.rounded-lg,.rounded-2xl{box-shadow:0 2px 8px rgba(31,41,55,.06)}
+.border-slate-200,.border-slate-300{border-color:#d7dee7!important}
+button.text-white{background-color:var(--idm-red)!important}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#edf1f5}::-webkit-scrollbar-thumb{background:#9da9b6;border-radius:8px}
+@media(max-width:900px){.idm-brand-title h1{font-size:18px}.idm-brand-title p{font-size:12px}.idm-logo{width:128px}.idm-nav{overflow-x:auto}.idm-nav button{padding:0 13px!important}.idm-top-actions button{padding-left:9px!important;padding-right:9px!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } = Recharts;
+
+/* ---------------------------------------------------------------------- */
+/*  Minimal inline icon set (replaces lucide-react for CDN use)            */
+/* ---------------------------------------------------------------------- */
+
+function makeIcon(paths) {
+  return function Icon({ size = 16, color = 'currentColor', className = '', style = {} }) {
+    return (
+      <svg
+        width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        className={className} style={style}
+      >
+        {paths}
+      </svg>
+    );
+  };
+}
+
+const Upload = makeIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>);
+const Users = makeIcon(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>);
+const Clock = makeIcon(<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>);
+const AlertTriangle = makeIcon(<><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></>);
+const ChevronLeft = makeIcon(<polyline points="15 18 9 12 15 6" />);
+const Search = makeIcon(<><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>);
+const Download = makeIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>);
+const RefreshCw = makeIcon(<><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></>);
+const FileWarning = makeIcon(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></>);
+const CheckCircle2 = makeIcon(<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>);
+const X = makeIcon(<><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>);
+const Building2 = makeIcon(<><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18Z" /><path d="M10 6h4M10 10h4M10 14h4M10 18h4" /><path d="M2 22h20" /></>);
+const Plus = makeIcon(<><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>);
+const Trash2 = makeIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>);
+const UserCog = makeIcon(<><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h3" /><circle cx="18" cy="18" r="3" /><path d="M18 14.5v1M18 20.5v1M14.5 18h1M20.5 18h1M15.5 15.5l.7.7M20.3 20.3l.7.7M15.5 20.5l.7-.7M20.3 15.7l.7-.7" /></>);
+
+/* ---------------------------------------------------------------------- */
+/*  Constants & helpers                                                    */
+/* ---------------------------------------------------------------------- */
+
+const FONT_IMPORT = `@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');`;
+
+const MONTH_ID = {
+  January: 'Januari', February: 'Februari', March: 'Maret', April: 'April',
+  May: 'Mei', June: 'Juni', July: 'Juli', August: 'Agustus',
+  September: 'September', October: 'Oktober', November: 'November', December: 'Desember',
+};
+const MONTH_NUM = {
+  January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+  July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+};
+const WEEKDAY_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const WEEKDAY_FULL_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const PELANGGARAN_CODES = ['M', 'LAM', 'LAP'];
+
+/* ---------------------------------------------------------------------- */
+/*  Database karyawan (sumber kebenaran — hanya NIK yang terdaftar di sini */
+/*  yang akan muncul di rekap)                                             */
+/* ---------------------------------------------------------------------- */
+
+const EMPLOYEE_DB_SEED = [
+  { nik: '2013048082', nama: 'HENI SITI SAMSIYAH', bagian: 'Adm DCM' },
+  { nik: '2015263710', nama: 'DIANASTRI DEWI MAHARANI', bagian: 'Apoteker' },
+  { nik: '2013143102', nama: 'DEKY NURDIANSYAH S', bagian: 'Inventory' },
+  { nik: '2015120688', nama: 'ALFIYYAH WIDHIAA R', bagian: 'Retur' },
+  { nik: '2013163334', nama: 'ZICHO OKY MIRNANDA', bagian: 'Inventory' },
+  { nik: '2015416794', nama: 'DANI SETIAWAN', bagian: 'BPB' },
+  { nik: '2013048831', nama: 'RIYAN HERYANTO', bagian: 'Inventory' },
+  { nik: '1999000017', nama: 'MAMUAH', bagian: 'BPB' },
+  { nik: '2012084171', nama: 'HUSSY BAMBAN SURYANEGARA', bagian: 'Inventory' },
+  { nik: '2015433368', nama: 'MUHAMMAD FEBRIAN ARRASYID', bagian: 'DC Support' },
+  { nik: '2012035914', nama: 'REKKI PRIHAKASA TRISYANA', bagian: 'NPB' },
+  { nik: '2012084217', nama: 'AFRIAL PUTRA', bagian: 'CCTV & Proforma' },
+  { nik: '2004006767', nama: 'WIENA ANGGAERY', bagian: 'Supervisor' },
+  { nik: '2013074871', nama: 'RIDWAN PURWANTO', bagian: 'DC Support' },
+  { nik: '2013162035', nama: 'NANANG SOBARKAH', bagian: 'BPB' },
+  { nik: '2012095347', nama: 'ERIK HIDAYAT', bagian: 'CCTV & Proforma' },
+  { nik: '2015441830', nama: 'RIZKI FEBRIAN', bagian: 'Inventory' },
+  { nik: '2011012060', nama: 'BAMBANG PRAMONO', bagian: 'BPB' },
+  { nik: '2015704193', nama: 'MUHAMMAD FARHAN', bagian: 'Supervisor' },
+  { nik: '2015603090', nama: 'ARGA FAALIH TRIADI', bagian: 'DC Support' },
+  { nik: '2015497250', nama: 'AHMAD ZAKY AMMAR DANY', bagian: 'DC Support' },
+  { nik: '2001006401', nama: 'TITIN YULIAWATI', bagian: 'Adm Voucher' },
+  { nik: '2015416802', nama: 'ARI FATAH ABDILLAH', bagian: 'NPB' },
+  { nik: '2015416772', nama: 'MUHAMMAD HIKMAL N S H', bagian: 'Inventory' },
+  { nik: '2013094646', nama: 'RINALDY RAMDHONI SUMAWAN', bagian: 'Supervisor' },
+  { nik: '2013163302', nama: 'VINO SAMUEL SALAKAY', bagian: 'NPB' },
+  { nik: '2010020843', nama: 'RIKI MAULANA', bagian: 'BPB' },
+  { nik: '2013061250', nama: 'DANIEL STEPHEN LASE', bagian: 'Supervisor' },
+  { nik: '2013006550', nama: 'IHSAN ARIF', bagian: 'CCTV & Proforma' },
+  { nik: '2013140099', nama: 'MUHAMAD SUBHI', bagian: 'CCTV & Proforma' },
+  { nik: '2011012070', nama: 'NURJI', bagian: 'CCTV & Proforma' },
+  { nik: '2011016361', nama: 'TONI RIYANTO', bagian: 'BPB' },
+  { nik: '2015343209', nama: 'TAUFIK HIDAYAT', bagian: 'DC Support' },
+  { nik: '2013092069', nama: 'MUHAMAD PADLI TANJUNG', bagian: 'DC Support' },
+];
+
+const CODE_META = {
+  OK:  { label: 'Hadir',                 short: 'OK',  ink: '#065f46', bg: '#ecfdf5', ring: '#a7f3d0' },
+  DT:  { label: 'Datang Terlambat',      short: 'DT',  ink: '#92400e', bg: '#fffbeb', ring: '#fde68a' },
+  OFF: { label: 'Libur',                 short: 'OFF', ink: '#334155', bg: '#f1f5f9', ring: '#cbd5e1' },
+  S:   { label: 'Sakit',                 short: 'S',   ink: '#075985', bg: '#f0f9ff', ring: '#bae6fd' },
+  C:   { label: 'Cuti',                  short: 'C',   ink: '#5b21b6', bg: '#f5f3ff', ring: '#ddd6fe' },
+  M:   { label: 'Mangkir',               short: 'M',   ink: '#9f1239', bg: '#fff1f2', ring: '#fecdd3' },
+  LAM: { label: 'Lupa Absen Masuk',      short: 'LAM', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
+  LAP: { label: 'Lupa Absen Pulang',     short: 'LAP', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
+  IDT: { label: 'Ijin Datang Terlambat', short: 'IDT', ink: '#854d0e', bg: '#fefce8', ring: '#fef08a' },
+  DL:  { label: 'Dinas Luar Kota',       short: 'DL',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
+  IP:  { label: 'Ijin Pulang',           short: 'IP',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
+  '-': { label: 'Tidak ada data',        short: '-',   ink: '#94a3b8', bg: '#f8fafc', ring: '#e2e8f0' },
+};
+
+const LATE_THRESHOLD_MIN = 6 * 60; // fallback jika kode shift tidak dikenali — 06:00
+
+/* Tabel referensi kode shift (reguler + khusus Jumat). Kode Jumat sudah unik   */
+/* (mis. 1510, 160, 91603, dst) sehingga cukup satu tabel gabungan — kode yang  */
+/* tercatat di file presensi otomatis menunjukkan jadwal mana yang berlaku.    */
+function toMinutes(hhmm) {
+  const parts = (hhmm || '').split(':').map((x) => parseInt(x, 10));
+  if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+  return parts[0] * 60 + parts[1];
+}
+
+const SHIFT_TABLE = {
+  '324':   { masuk: '0:00',  pulang: '8:00' },
+  '9324':  { masuk: '0:00',  pulang: '6:00' },
+  '11':    { masuk: '1:00',  pulang: '9:00' },
+  '911':   { masuk: '1:00',  pulang: '7:00' },
+  '12':    { masuk: '2:00',  pulang: '10:00' },
+  '912':   { masuk: '2:00',  pulang: '8:00' },
+  '13':    { masuk: '3:00',  pulang: '11:00' },
+  '913':   { masuk: '3:00',  pulang: '9:00' },
+  '14':    { masuk: '4:00',  pulang: '12:00' },
+  '914':   { masuk: '4:00',  pulang: '10:00' },
+  '15':    { masuk: '5:00',  pulang: '13:00' },
+  '915':   { masuk: '5:00',  pulang: '11:00' },
+  '16':    { masuk: '6:00',  pulang: '14:00' },
+  '916':   { masuk: '6:00',  pulang: '12:00' },
+  '17':    { masuk: '7:00',  pulang: '15:00' },
+  '917':   { masuk: '7:00',  pulang: '13:00' },
+  '18':    { masuk: '8:00',  pulang: '16:00' },
+  '918':   { masuk: '8:00',  pulang: '14:00' },
+  '29':    { masuk: '9:00',  pulang: '17:00' },
+  '929':   { masuk: '9:00',  pulang: '15:00' },
+  '210':   { masuk: '10:00', pulang: '18:00' },
+  '9210':  { masuk: '10:00', pulang: '16:00' },
+  '211':   { masuk: '11:00', pulang: '19:00' },
+  '9211':  { masuk: '11:00', pulang: '17:00' },
+  '212':   { masuk: '12:00', pulang: '20:00' },
+  '9212':  { masuk: '12:00', pulang: '18:00' },
+  '213':   { masuk: '13:00', pulang: '21:00' },
+  '9213':  { masuk: '13:00', pulang: '19:00' },
+  '214':   { masuk: '14:00', pulang: '22:00' },
+  '9214':  { masuk: '14:00', pulang: '20:00' },
+  '215':   { masuk: '15:00', pulang: '23:00' },
+  '9215':  { masuk: '15:00', pulang: '21:00' },
+  '216':   { masuk: '16:00', pulang: '0:00' },
+  '9216':  { masuk: '16:00', pulang: '22:00' },
+  '2160':  { masuk: '16:30', pulang: '0:30' },
+  '317':   { masuk: '17:00', pulang: '1:00' },
+  '9317':  { masuk: '17:00', pulang: '23:00' },
+  '318':   { masuk: '18:00', pulang: '2:00' },
+  '9318':  { masuk: '18:00', pulang: '0:00' },
+  '319':   { masuk: '19:00', pulang: '3:00' },
+  '9319':  { masuk: '19:00', pulang: '1:00' },
+  '320':   { masuk: '20:00', pulang: '4:00' },
+  '9320':  { masuk: '20:00', pulang: '2:00' },
+  '321':   { masuk: '21:00', pulang: '5:00' },
+  '9321':  { masuk: '21:00', pulang: '3:00' },
+  '322':   { masuk: '22:00', pulang: '6:00' },
+  '9322':  { masuk: '22:00', pulang: '4:00' },
+  '323':   { masuk: '23:00', pulang: '7:00' },
+  '9323':  { masuk: '23:00', pulang: '5:00' },
+  '3241':  { masuk: '0:05',  pulang: '8:05' },
+  '93241': { masuk: '23:55', pulang: '5:55' },
+  // Kode shift khusus Jumat
+  '1510':  { masuk: '5:00',  pulang: '13:30', jumat: true },
+  '160':   { masuk: '6:00',  pulang: '14:30', jumat: true },
+  '91603': { masuk: '6:00',  pulang: '12:30', jumat: true },
+  '170':   { masuk: '7:00',  pulang: '15:30', jumat: true },
+  '91720': { masuk: '7:00',  pulang: '13:30', jumat: true },
+  '180':   { masuk: '8:00',  pulang: '16:30', jumat: true },
+  '9180':  { masuk: '8:00',  pulang: '14:30', jumat: true },
+  '290':   { masuk: '9:00',  pulang: '17:30', jumat: true },
+  '9290':  { masuk: '9:00',  pulang: '15:30', jumat: true },
+  '2100':  { masuk: '10:00', pulang: '18:30', jumat: true },
+  '92100': { masuk: '10:00', pulang: '16:30', jumat: true },
+};
+
+function shiftInfoFor(shiftCode) {
+  const key = (shiftCode || '').toString().trim();
+  return key && SHIFT_TABLE[key] ? SHIFT_TABLE[key] : null;
+}
+
+function deriveCode(status, masuk, shiftCode) {
+  const s = (status || '').trim();
+  if (s === 'Libur') return { code: 'OFF' };
+  if (s === 'Sakit') return { code: 'S' };
+  if (s === 'Cuti Tahunan' || s === 'Cuti Besar') return { code: 'C' };
+  if (s === 'Mangkir') return { code: 'M' };
+  if (s === 'Lupa Absen Waktu Masuk') return { code: 'LAM' };
+  if (s === 'Lupa Absen Waktu Pulang') return { code: 'LAP' };
+  if (s === 'Ijin Datang Terlambat') return { code: 'IDT' };
+  if (s === 'Ijin Pulang') return { code: 'IP' };
+  if (s === 'Dinas Luar Kota') return { code: 'DL' };
+  if (s === 'Hadir') {
+    const parts = (masuk || '').split(':').map((x) => parseInt(x, 10));
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      const total = parts[0] * 60 + parts[1];
+      const info = shiftInfoFor(shiftCode);
+      const threshold = info ? toMinutes(info.masuk) : LATE_THRESHOLD_MIN;
+      if (total > threshold) return { code: 'DT', lateMin: total - threshold };
+      return { code: 'OK' };
+    }
+    return { code: 'OK' };
+  }
+  return { code: '-' };
+}
+
+function emptyTotals() {
+  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, IDT: 0, DL: 0, IP: 0, DT: 0, minutes: 0 };
+}
+
+/* ---------------------------------------------------------------------- */
+/*  File parsing                                                           */
+/* ---------------------------------------------------------------------- */
+
+async function parseLhpkFile(file) {
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+
+  // metadata (divisi, mgr, spv, periode, cabang) — best effort, never blocks parsing
+  const meta = { divisi: '', mgr: '', spv: '', periode: '', cabang: '', perusahaan: '' };
+  let brandRowsSeen = 0;
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const r = rows[i];
+    const c0 = (r[0] || '').toString().trim();
+    if (c0 === 'Divisi') meta.divisi = (r[1] || '').toString().trim();
+    else if (c0 === 'Mgr') meta.mgr = (r[1] || '').toString().trim();
+    else if (c0 === 'Spv') meta.spv = (r[1] || '').toString().trim();
+    else if (c0 === 'Periode Bulan') meta.periode = (r[1] || '').toString().trim();
+    else if (c0.includes(' - ') && brandRowsSeen === 0) { meta.perusahaan = c0; brandRowsSeen = 1; }
+    else if (c0.includes(' - ') && brandRowsSeen === 1) { meta.cabang = c0; brandRowsSeen = 2; }
+  }
+
+  const headerIdx = rows.findIndex((r) => (r[1] || '').toString().trim().toLowerCase() === 'nik');
+  if (headerIdx === -1) {
+    throw new Error('Format file tidak dikenali — kolom "Nik" tidak ditemukan. Pastikan ini file LHPK (Laporan History Presensi Karyawan) asli.');
+  }
+
+  let dataStart = -1;
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const r = rows[i];
+    const nikCandidate = (r[1] || '').toString().trim();
+    const tglCandidate = (r[3] || '').toString().trim();
+    if (/^\d{4,}$/.test(nikCandidate) && /\d{1,2}\s+\w+\s+\d{4}/.test(tglCandidate)) { dataStart = i; break; }
+  }
+  if (dataStart === -1) dataStart = headerIdx + 3;
+
+  const employeesMap = new Map();
+  let year = null, monthNum = null, monthName = '';
+
+  for (let i = dataStart; i < rows.length; i++) {
+    const r = rows[i];
+    const nik = (r[1] || '').toString().trim();
+    const nama = (r[2] || '').toString().trim();
+    const tgl = (r[3] || '').toString().trim();
+    const m = tgl.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+    if (!nik || !nama || !m) continue;
+
+    const day = parseInt(m[1], 10);
+    if (!year) { year = parseInt(m[3], 10); monthName = m[2]; monthNum = MONTH_NUM[m[2]] || null; }
+
+    const shift = (r[4] || '').toString().trim();
+    const status = (r[5] || '').toString().trim();
+    const absid = (r[6] || '').toString().trim();
+    const masuk = (r[7] || '').toString().trim();
+    const pulang = (r[8] || '').toString().trim();
+    const { code, lateMin } = deriveCode(status, masuk, shift);
+
+    if (!employeesMap.has(nik)) employeesMap.set(nik, { nik, nama, days: {} });
+    employeesMap.get(nik).days[day] = { shift, status, absid, masuk, pulang, code, lateMin: lateMin || 0 };
+  }
+
+  if (employeesMap.size === 0) {
+    throw new Error('Tidak ada baris data karyawan yang bisa dibaca dari file ini.');
+  }
+
+  const monthLength = year && monthNum ? new Date(year, monthNum, 0).getDate() : 31;
+
+  const employees = Array.from(employeesMap.values()).map((emp) => {
+    const totals = emptyTotals();
+    for (let d = 1; d <= monthLength; d++) {
+      const rec = emp.days[d];
+      if (!rec) continue;
+      totals[rec.code] = (totals[rec.code] || 0) + 1;
+      if (rec.code === 'DT') totals.minutes += rec.lateMin;
+    }
+    const pelanggaran = totals.DT + totals.LAM + totals.LAP + totals.M;
+    const avgMin = totals.DT > 0 ? Math.round(totals.minutes / totals.DT) : 0;
+    return { ...emp, totals, pelanggaran, avgMin };
+  });
+
+  return {
+    employees,
+    monthLength,
+    year,
+    monthNum,
+    monthLabelId: monthName ? `${MONTH_ID[monthName] || monthName} ${year}` : '',
+    meta,
+    parsedAt: Date.now(),
+  };
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Small UI atoms                                                         */
+/* ---------------------------------------------------------------------- */
+
+function Badge({ code }) {
+  const meta = CODE_META[code] || CODE_META['-'];
+  return (
+    <span
+      className="kode-text"
+      style={{ color: meta.ink }}
+      title={meta.label}
+    >
+      {meta.short}
+    </span>
+  );
+}
+
+function StatCard({ label, value, sub, tone }) {
+  const tones = {
+    slate:   { bg: '#f8fafc', ink: '#0f172a', ring: '#e2e8f0' },
+    emerald: { bg: '#ecfdf5', ink: '#065f46', ring: '#a7f3d0' },
+    amber:   { bg: '#fffbeb', ink: '#92400e', ring: '#fde68a' },
+    rose:    { bg: '#fff1f2', ink: '#9f1239', ring: '#fecdd3' },
+    violet:  { bg: '#f5f3ff', ink: '#5b21b6', ring: '#ddd6fe' },
+    sky:     { bg: '#f0f9ff', ink: '#075985', ring: '#bae6fd' },
+  };
+  const t = tones[tone] || tones.slate;
+  return (
+    <div className="rounded-lg border p-3" style={{ backgroundColor: t.bg, borderColor: t.ring }}>
+      <div className="text-[11px] font-medium" style={{ color: t.ink, opacity: 0.75 }}>{label}</div>
+      <div className="text-2xl font-semibold mt-0.5" style={{ color: t.ink, fontFamily: "'IBM Plex Mono', monospace" }}>{value}</div>
+      {sub && <div className="text-[11px] mt-0.5" style={{ color: t.ink, opacity: 0.65 }}>{sub}</div>}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Upload dropzone                                                         */
+/* ---------------------------------------------------------------------- */
+
+function Dropzone({ onFile, busy, error }) {
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef(null);
+
+  return (
+    <div className="min-h-[70vh] flex items-center justify-center px-6">
+      <div className="w-full max-w-xl">
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault(); setDragOver(false);
+            const f = e.dataTransfer.files?.[0];
+            if (f) onFile(f);
+          }}
+          className="rounded-2xl border-2 border-dashed p-12 text-center transition-colors"
+          style={{ borderColor: dragOver ? '#0f172a' : '#cbd5e1', backgroundColor: dragOver ? '#f8fafc' : '#ffffff' }}
+        >
+          <div className="mx-auto mb-4 w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
+            {busy ? <RefreshCw className="animate-spin" size={22} color="#fff" /> : <Upload size={22} color="#fff" />}
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            {busy ? 'Membaca file LHPK…' : 'Upload file LHPK bulan ini'}
+          </h2>
+          <p className="text-sm text-slate-500 mt-1.5 max-w-sm mx-auto">
+            Tarik file .xls ke sini, atau klik tombol di bawah. Cukup file mentah yang Anda export dari sistem presensi — kolom A-I.
+          </p>
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".xls,.xlsx"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
+          />
+          <button
+            onClick={() => inputRef.current?.click()}
+            disabled={busy}
+            className="mt-6 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
+            style={{ backgroundColor: '#0f172a' }}
+          >
+            <Upload size={15} /> Pilih file .xls
+          </button>
+        </div>
+        {error && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg border px-3.5 py-3 text-sm" style={{ borderColor: '#fecdd3', backgroundColor: '#fff1f2', color: '#9f1239' }}>
+            <FileWarning size={16} className="mt-0.5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Rekap matrix tab                                                        */
+/* ---------------------------------------------------------------------- */
+
+function RekapTab({ data, onSelectEmployee }) {
+  const days = Array.from({ length: data.monthLength }, (_, i) => i + 1);
+  const weekdayFor = (d) => {
+    if (!data.year || !data.monthNum) return '';
+    return WEEKDAY_ID[new Date(data.year, data.monthNum - 1, d).getDay()];
+  };
+
+  const NAMA_W = 130, NIK_W = 40, BAGIAN_W = 40;
+  const NIK_LEFT = NAMA_W, BAGIAN_LEFT = NAMA_W + NIK_W;
+
+  // Sort bertingkat: total pelanggaran(z-a) -> avg(z-a) -> hadir(a-z) -> off(z-a) -> sakit(z-a) -> cuti(z-a) -> nama(a-z)
+  const pelanggaranMax = useMemo(() => Math.max(0, ...data.employees.map(e => Number(e.pelanggaran) || 0)), [data.employees]);
+  const pelanggaranColor = (value) => {
+    const v = Number(value) || 0;
+    if (!pelanggaranMax || v <= 0) return { backgroundColor: '#dcfce7', color: '#166534' };
+    const t = Math.max(0, Math.min(1, v / pelanggaranMax));
+    const r = Math.round(220 + (239 - 220) * t);
+    const g = Math.round(252 + (68 - 252) * t);
+    const b = Math.round(231 + (68 - 231) * t);
+    return { backgroundColor: `rgb(${r}, ${g}, ${b})`, color: t > 0.55 ? '#ffffff' : '#166534' };
+  };
+
+  const sortedEmployees = useMemo(() => {
+    const list = [...data.employees];
+    list.sort((a, b) => (
+      (b.pelanggaran - a.pelanggaran)
+      || (b.avgMin - a.avgMin)
+      || (a.totals.OK - b.totals.OK)
+      || (b.totals.OFF - a.totals.OFF)
+      || (b.totals.S - a.totals.S)
+      || (b.totals.C - a.totals.C)
+      || a.nama.localeCompare(b.nama, 'id')
+    ));
+    return list;
+  }, [data.employees]);
+
+  const downloadCsv = () => {
+    const head = ['No', 'Nama', 'NIK', 'Bagian', ...days.map(String),
+      'Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Total Pelanggaran', 'Lupa Absen Masuk', 'Lupa Absen Pulang', 'Mangkir', 'Datang Terlambat', 'Menit', 'AVG Menit'];
+    const lines = [head.join(',')];
+    sortedEmployees.forEach((emp, idx) => {
+      const row = [
+        idx + 1, `"${emp.nama}"`, emp.nik, `"${emp.bagian || ''}"`,
+        ...days.map((d) => emp.days[d]?.code || '-'),
+        emp.totals.OK, emp.totals.OFF, emp.totals.S, emp.totals.C, emp.totals.IDT,
+        emp.pelanggaran, emp.totals.LAM, emp.totals.LAP, emp.totals.M, emp.totals.DT,
+        emp.totals.minutes, emp.avgMin,
+      ];
+      lines.push(row.join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `rekap-presensi-${data.monthLabelId.replace(' ', '-').toLowerCase()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div>
+      <div className="rounded-lg border-2 border-slate-300 overflow-auto rekap-table-wrap" style={{ height: 'calc(100vh - 170px)', maxHeight: 'calc(100vh - 170px)' }}>
+        <table className="rekap-table border-collapse text-[10px]" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <thead>
+            <tr>
+              <th className="sticky top-0 left-0 z-30 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ width: NAMA_W, minWidth: NAMA_W, maxWidth: NAMA_W, padding: 0 }}>Nama</th>
+              <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, padding: 0 }}>NIK</th>
+              <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, padding: 0 }}>Bagian</th>
+              {days.map((d) => (
+                <th key={d} className="sticky top-0 z-10 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: 20, minWidth: 20, maxWidth: 20, padding: 0 }}>
+                  <div>{String(d).padStart(2, '0')}</div>
+                  <div className="text-[9px] font-normal opacity-70">{weekdayFor(d)}</div>
+                </th>
+              ))}
+              {['Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Tot.Pel', 'LAM', 'LAP', 'Mangkir', 'DT', 'Menit', 'AVG'].map((h) => (
+                <th key={h} className="sticky top-0 z-10 bg-blue-700 text-white text-center px-2 py-2 font-semibold border-slate-500" style={{ width: 25, minWidth: 25, maxWidth: 25, padding: 0 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedEmployees.map((emp, idx) => (
+              <tr key={emp.nik} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                <td
+                  className="nama-cell sticky left-0 z-10 px-2 py-1 border-slate-400 font-medium text-slate-800 cursor-pointer hover:underline"
+                  style={{ backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
+                  onClick={() => onSelectEmployee(emp.nik)}
+                >
+                  {emp.nama}
+                </td>
+                <td
+                  className="sticky z-10 px-0 py-1 border-slate-400 text-slate-500 text-center cursor-pointer hover:underline"
+                  style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc', fontFamily: "'IBM Plex Mono', monospace" }}
+                  onClick={() => onSelectEmployee(emp.nik)}
+                >
+                  {emp.nik}
+                </td>
+                <td className="sticky z-10 px-0 py-1 border-slate-400 text-[10px] text-slate-600 text-center" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                  {emp.bagian || '—'}
+                </td>
+                {days.map((d) => {
+                  const code = emp.days[d]?.code;
+                  return (
+                    <td
+                      key={d}
+                      className={`status-cell status-${code || 'blank'} border-slate-400`}
+                      title={code ? (CODE_META[code]?.label || code) : 'Hadir'}
+                    >
+                      {code && code !== 'OK' ? <Badge code={code} /> : null}
+                    </td>
+                  );
+                })}
+                <td className="text-center px-1 py-1 border-slate-400 font-medium sum-OK">{emp.totals.OK}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-OFF">{emp.totals.OFF || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-S">{emp.totals.S || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-C">{emp.totals.C || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-IDT">{emp.totals.IDT || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 font-semibold sum-Pel" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-LAM">{emp.totals.LAM || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-LAP">{emp.totals.LAP || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-M" style={{ color: emp.totals.M > 0 ? '#be123c' : '#94a3b8' }}>{emp.totals.M || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-DT" style={{ color: emp.totals.DT > 0 ? '#b45309' : '#94a3b8' }}>{emp.totals.DT || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-Minutes" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.totals.minutes || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-AVG" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.avgMin || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-3">
+        {Object.entries(CODE_META).filter(([k]) => k !== '-' && k !== 'OK').map(([k, m]) => (
+          <div key={k} className="flex items-center gap-1.5 text-[11px] text-slate-500">
+            <Badge code={k} /> {m.label}
+          </div>
+        ))}
+        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <span className="inline-block rounded border" style={{ width: 30, height: 18, borderColor: '#e2e8f0' }} /> Hadir (kosong)
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Rincian Pelanggaran tab                                                 */
+/* ---------------------------------------------------------------------- */
+
+function PelanggaranTab({ data, onSelectEmployee }) {
+  const rows = useMemo(() => {
+    const out = [];
+    data.employees.forEach((emp) => {
+      for (let d = 1; d <= data.monthLength; d++) {
+        const rec = emp.days[d];
+        if (!rec || !PELANGGARAN_CODES.includes(rec.code)) continue;
+        out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d });
+      }
+    });
+    out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+    return out;
+  }, [data]);
+
+  const tanggalLabel = (d) => {
+    if (!data.year || !data.monthNum) return String(d);
+    const dt = new Date(data.year, data.monthNum - 1, d);
+    return `${WEEKDAY_FULL_ID[dt.getDay()]}, ${String(d).padStart(2, '0')} ${MONTH_ID[Object.keys(MONTH_NUM).find((k) => MONTH_NUM[k] === data.monthNum)] || ''} ${data.year}`;
+  };
+
+  const downloadCsv = () => {
+    const head = ['No', 'NIK', 'Nama', 'Shift', 'Jam Masuk', 'Jam Pulang', 'Tanggal', 'Keterangan'];
+    const lines = [head.join(',')];
+    rows.forEach((r, idx) => {
+      lines.push([
+        idx + 1, r.nik, `"${r.nama}"`, r.shift,
+        r.masuk, r.pulang, `"${tanggalLabel(r.day)}"`,
+        `"${CODE_META[r.code]?.label || r.status}"`,
+      ].join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `rincian-pelanggaran-${(data.monthLabelId || '').replace(' ', '-').toLowerCase()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm text-slate-500">{rows.length} pelanggaran tercatat</p>
+        <button
+          onClick={downloadCsv}
+          className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          <Download size={13} /> Unduh CSV
+        </button>
+      </div>
+
+      <div className="rounded-lg border-2 border-slate-300 overflow-auto" style={{ maxHeight: '70vh' }}>
+        <table className="w-full text-[12px] border-collapse" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <thead>
+            <tr className="bg-slate-900 text-white">
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">No</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">NIK</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Nama</th>
+              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Shift</th>
+              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Masuk</th>
+              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium">Pulang</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Tanggal</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Keterangan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, idx) => (
+              <tr key={`${r.nik}-${r.day}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500">{idx + 1}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.nik}</td>
+                <td
+                  className="px-2.5 py-1.5 border-t border-slate-300 font-medium text-slate-800 cursor-pointer hover:underline"
+                  onClick={() => onSelectEmployee(r.nik)}
+                >
+                  {r.nama}
+                </td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500">{r.shift || '—'}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.masuk && r.masuk !== '00:00' ? r.masuk : '—'}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{r.pulang && r.pulang !== '00:00' ? r.pulang : '—'}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300 text-slate-500">{tanggalLabel(r.day)}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-300">
+                  <Badge code={r.code} /> <span className="text-slate-500 ml-1">{CODE_META[r.code]?.label}</span>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={8} className="text-center text-slate-400 py-8">Tidak ada pelanggaran pada periode ini.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Detail / dashboard tab                                                  */
+/* ---------------------------------------------------------------------- */
+
+function DetailTab({ data, selectedNik, onSelectEmployee }) {
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return data.employees;
+    return data.employees.filter((e) => e.nama.toLowerCase().includes(q) || e.nik.includes(q));
+  }, [data.employees, query]);
+
+  const selected = data.employees.find((e) => e.nik === selectedNik) || filtered[0] || data.employees[0];
+
+  const chartData = useMemo(() => {
+    if (!selected) return [];
+    return Array.from({ length: data.monthLength }, (_, i) => {
+      const d = i + 1;
+      const rec = selected.days[d];
+      return { day: d, menit: rec?.code === 'DT' ? rec.lateMin : 0 };
+    });
+  }, [selected, data.monthLength]);
+
+  if (!selected) return null;
+
+  return (
+    <div className="flex gap-4" style={{ height: '72vh' }}>
+      <div className="w-64 shrink-0 rounded-lg border border-slate-200 flex flex-col overflow-hidden bg-white">
+        <div className="p-2.5 border-b border-slate-100">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-2.5 text-slate-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Cari nama / NIK…"
+              className="w-full text-sm pl-7 pr-2 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+            />
+          </div>
+        </div>
+        <div className="overflow-y-auto flex-1">
+          {filtered.map((emp) => {
+            const active = emp.nik === selected.nik;
+            return (
+              <button
+                key={emp.nik}
+                onClick={() => onSelectEmployee(emp.nik)}
+                className="w-full text-left px-3 py-2 border-b border-slate-50 flex items-center justify-between gap-2"
+                style={{ backgroundColor: active ? '#0f172a' : 'transparent' }}
+              >
+                <div className="min-w-0">
+                  <div className="text-[13px] font-medium truncate" style={{ color: active ? '#fff' : '#0f172a' }}>{emp.nama}</div>
+                  <div className="text-[10px] truncate" style={{ color: active ? '#94a3b8' : '#94a3b8', fontFamily: "'IBM Plex Mono', monospace" }}>{emp.nik}</div>
+                </div>
+                {emp.pelanggaran > 0 && (
+                  <span
+                    className="shrink-0 text-[10px] font-semibold rounded-full px-1.5 py-0.5"
+                    style={{ backgroundColor: active ? '#fbbf24' : '#fffbeb', color: active ? '#78350f' : '#b45309' }}
+                  >
+                    {emp.pelanggaran}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          {filtered.length === 0 && <p className="text-xs text-slate-400 text-center py-6">Tidak ditemukan.</p>}
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0 overflow-y-auto pr-1">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>{selected.nama}</h2>
+            <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{selected.nik}</span>
+              <span className="flex items-center gap-1">
+                <Building2 size={13} />
+                <span>{selected.bagian || '—'}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 mb-5">
+          <StatCard label="Hadir" value={selected.totals.OK} tone="emerald" />
+          <StatCard label="Telat" value={selected.totals.DT} sub={selected.totals.DT ? `${selected.totals.minutes} menit` : undefined} tone="amber" />
+          <StatCard label="Sakit" value={selected.totals.S} tone="sky" />
+          <StatCard label="Cuti" value={selected.totals.C} tone="violet" />
+          <StatCard label="Mangkir" value={selected.totals.M} tone="rose" />
+          <StatCard label="Total Pelanggaran" value={selected.pelanggaran} tone={selected.pelanggaran ? 'amber' : 'slate'} />
+        </div>
+
+        {selected.totals.DT > 0 && (
+          <div className="rounded-lg border border-slate-200 p-3.5 mb-5">
+            <p className="text-xs font-medium text-slate-500 mb-2">Menit keterlambatan per tanggal</p>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={28} />
+                <Tooltip
+                  cursor={{ fill: '#f8fafc' }}
+                  formatter={(v) => [`${v} menit`, 'Telat']}
+                  labelFormatter={(l) => `Tanggal ${l}`}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                />
+                <Bar dataKey="menit" radius={[3, 3, 0, 0]}>
+                  {chartData.map((d, i) => (
+                    <Cell key={i} fill={d.menit > 0 ? '#f59e0b' : '#f1f5f9'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        <p className="text-xs font-medium text-slate-500 mb-2">Rincian harian</p>
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          <table className="w-full text-[12px]" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            <thead>
+              <tr className="bg-slate-50 text-slate-500">
+                <th className="text-left px-3 py-1.5 font-medium">Tanggal</th>
+                <th className="text-left px-3 py-1.5 font-medium">Status</th>
+                <th className="text-center px-3 py-1.5 font-medium">Kode</th>
+                <th className="text-center px-3 py-1.5 font-medium">Shift</th>
+                <th className="text-center px-3 py-1.5 font-medium">Masuk</th>
+                <th className="text-center px-3 py-1.5 font-medium">Pulang</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: data.monthLength }, (_, i) => i + 1).map((d) => {
+                const rec = selected.days[d];
+                const wk = data.year && data.monthNum ? WEEKDAY_ID[new Date(data.year, data.monthNum - 1, d).getDay()] : '';
+                const sInfo = rec ? shiftInfoFor(rec.shift) : null;
+                return (
+                  <tr key={d} className="border-t border-slate-100">
+                    <td className="px-3 py-1.5 text-slate-700">{String(d).padStart(2, '0')} <span className="text-slate-400">{wk}</span></td>
+                    <td className="px-3 py-1.5 text-slate-500">{rec ? (CODE_META[rec.code]?.label || rec.status) : '—'}</td>
+                    <td className="px-3 py-1.5 text-center"><Badge code={rec?.code || '-'} /></td>
+                    <td className="px-3 py-1.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }} title={sInfo ? `Jadwal resmi: ${sInfo.masuk}–${sInfo.pulang}${sInfo.jumat ? ' (Jumat)' : ''}` : ''}>
+                      {rec?.shift || '—'}
+                    </td>
+                    <td className="px-3 py-1.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.masuk && rec.masuk !== '00:00' ? rec.masuk : '—'}</td>
+                    <td className="px-3 py-1.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.pulang && rec.pulang !== '00:00' ? rec.pulang : '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Data Karyawan tab (database internal — sumber kebenaran untuk rekap)   */
+/* ---------------------------------------------------------------------- */
+
+function KaryawanTab({ employeeDb, onAdd, onDelete }) {
+  const [query, setQuery] = useState('');
+  const [nama, setNama] = useState('');
+  const [nik, setNik] = useState('');
+  const [bagian, setBagian] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = !q ? employeeDb : employeeDb.filter(
+      (e) => e.nama.toLowerCase().includes(q) || e.nik.includes(q) || (e.bagian || '').toLowerCase().includes(q)
+    );
+    return [...list].sort((a, b) => a.nama.localeCompare(b.nama));
+  }, [employeeDb, query]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    const n = nama.trim();
+    const k = nik.trim();
+    const b = bagian.trim();
+    if (!n || !k) { setFormError('Nama dan NIK wajib diisi.'); return; }
+    if (employeeDb.some((emp) => emp.nik === k)) { setFormError(`NIK ${k} sudah terdaftar.`); return; }
+    onAdd({ nik: k, nama: n, bagian: b });
+    setNama(''); setNik(''); setBagian(''); setFormError('');
+  };
+
+  return (
+    <div>
+      <div className="rounded-lg border border-slate-200 bg-white p-3.5 mb-4">
+        <p className="text-xs font-medium text-slate-500 mb-2.5">Tambah karyawan baru</p>
+        <form onSubmit={submit} className="flex flex-wrap items-start gap-2">
+          <input
+            value={nama}
+            onChange={(e) => setNama(e.target.value)}
+            placeholder="Nama karyawan"
+            className="flex-1 min-w-[160px] text-sm px-2.5 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+          />
+          <input
+            value={nik}
+            onChange={(e) => setNik(e.target.value.replace(/[^0-9]/g, ''))}
+            placeholder="NIK"
+            className="w-40 text-sm px-2.5 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+            style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+          />
+          <input
+            value={bagian}
+            onChange={(e) => setBagian(e.target.value)}
+            placeholder="Bagian"
+            className="w-44 text-sm px-2.5 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+          />
+          <button
+            type="submit"
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-white"
+            style={{ backgroundColor: '#0f172a' }}
+          >
+            <Plus size={14} /> Tambah
+          </button>
+        </form>
+        {formError && <p className="text-xs mt-2" style={{ color: '#be123c' }}>{formError}</p>}
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm text-slate-500">{employeeDb.length} karyawan terdaftar di database</p>
+        <div className="relative">
+          <Search size={13} className="absolute left-2.5 top-2.5 text-slate-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cari nama / NIK / bagian…"
+            className="text-sm pl-7 pr-2 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400 w-64"
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 overflow-auto" style={{ maxHeight: '60vh' }}>
+        <table className="w-full text-[12px] border-collapse" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <thead>
+            <tr className="bg-slate-900 text-white">
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium" style={{ width: 44 }}>No</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Nama</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">NIK</th>
+              <th className="sticky top-0 bg-slate-900 text-left px-2.5 py-2 font-medium">Bagian</th>
+              <th className="sticky top-0 bg-slate-900 text-center px-2.5 py-2 font-medium" style={{ width: 70 }}>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((emp, idx) => (
+              <tr key={emp.nik} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                <td className="px-2.5 py-1.5 border-t border-slate-100 text-slate-400">{idx + 1}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-100 font-medium text-slate-800">{emp.nama}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-100 text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.nik}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-100 text-slate-500">{emp.bagian || '—'}</td>
+                <td className="px-2.5 py-1.5 border-t border-slate-100 text-center">
+                  <button
+                    onClick={() => { if (window.confirm(`Hapus ${emp.nama} dari database karyawan?`)) onDelete(emp.nik); }}
+                    className="inline-flex items-center justify-center rounded-md p-1.5 text-rose-500 hover:bg-rose-50"
+                    title="Hapus karyawan"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={5} className="text-center text-slate-400 py-8">Tidak ada karyawan yang cocok.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/*  Root app                                                                */
+/* ---------------------------------------------------------------------- */
+
+// ============================================================================
+// KONEKSI KE GOOGLE SHEETS (via Google Apps Script Web App)
+// ----------------------------------------------------------------------------
+// 1. Deploy Apps Script backend (lihat file AppsScript-Code.gs yang menyertai
+//    aplikasi ini) sebagai Web App, lalu tempel URL-nya di bawah ini.
+// 2. Isi APPS_SCRIPT_KEY sama persis dengan API_KEY yang kamu set di script itu.
+// Kalau URL belum diisi, aplikasi otomatis fallback pakai localStorage browser
+// (tersimpan lokal per-perangkat saja, tidak sinkron lintas device).
+// ============================================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcBzDUt73lhjYUbOn0jyMy9JqsRIdWY6y5XyepaQpWqh-bDMQefvW4yl1Hhq4n5VIlQg/exec';
+const APPS_SCRIPT_KEY = '00000'; // <-- isi sama dengan API_KEY di Apps Script
+
+const sheetsApi = {
+  configured() { return !!APPS_SCRIPT_URL; },
+  async get(action, params) {
+    const qs = new URLSearchParams({ action, ...(params || {}) }).toString();
+    const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+  },
+  async post(action, body) {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight Apps Script
+      body: JSON.stringify({ action, apiKey: APPS_SCRIPT_KEY, ...(body || {}) }),
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    return json;
+  },
+};
+
+// Cache lokal (localStorage) — hanya sebagai fallback offline / kalau Apps
+// Script belum dikonfigurasi. Sumber kebenaran utama tetap Google Sheets.
+const localCache = {
+  get(key) { try { return window.localStorage.getItem(key); } catch (e) { return null; } },
+  set(key, value) { try { window.localStorage.setItem(key, value); } catch (e) { /* penuh/diblokir */ } },
+};
+
+// Hitung hari terakhir yang ada datanya di sebuah dataset hasil parseLhpkFile
+function computeLastDataDay(parsedData) {
+  let lastDay = 0;
+  (parsedData.employees || []).forEach((emp) => {
+    Object.keys(emp.days || {}).forEach((d) => { const n = Number(d); if (n > lastDay) lastDay = n; });
+  });
+  return lastDay;
+}
+
+function periodKeyOf(parsedData) {
+  if (!parsedData.year || !parsedData.monthNum) return null;
+  return `${parsedData.year}-${String(parsedData.monthNum).padStart(2, '0')}`;
+}
+
+function App() {
+  const [data, setData] = useState(null);
+  const [employeeDb, setEmployeeDb] = useState(EMPLOYEE_DB_SEED);
+  const [tab, setTab] = useState('rekap');
+  const [selectedNik, setSelectedNik] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [initLoading, setInitLoading] = useState(true);
+  const [syncError, setSyncError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (sheetsApi.configured()) {
+          // --- Sumber utama: Google Sheets ---
+          try {
+            const [{ rows }, edbRes] = await Promise.all([
+              sheetsApi.get('getIndex'),
+              sheetsApi.get('getEmployeeDb'),
+            ]);
+
+            if (edbRes.employees && edbRes.employees.length > 0) {
+              setEmployeeDb(edbRes.employees);
+              localCache.set('lhpk:employee-db', JSON.stringify(edbRes.employees));
+            } else {
+              // EmployeeDB kosong di sheet (baru pertama kali dipakai) -> seed awal
+              setEmployeeDb(EMPLOYEE_DB_SEED);
+              sheetsApi.post('saveEmployeeDb', { employees: EMPLOYEE_DB_SEED }).catch(() => {});
+            }
+
+            if (rows && rows.length > 0) {
+              const latest = rows.reduce((a, b) => (a.period > b.period ? a : b));
+              const periodRes = await sheetsApi.get('getPeriod', { period: latest.period });
+              if (periodRes.value) {
+                const parsed = JSON.parse(periodRes.value);
+                setData(parsed);
+                localCache.set('lhpk:dataset', periodRes.value);
+              }
+            }
+          } catch (apiErr) {
+            // Google Sheets gagal diakses (offline/URL salah) -> pakai cache lokal terakhir
+            setSyncError('Gagal sinkron ke Google Sheets, menampilkan data cache lokal terakhir.');
+            const cachedData = localCache.get('lhpk:dataset');
+            const cachedEdb = localCache.get('lhpk:employee-db');
+            if (cachedData) setData(JSON.parse(cachedData));
+            if (cachedEdb) setEmployeeDb(JSON.parse(cachedEdb));
+          }
+        } else {
+          // --- Apps Script belum dikonfigurasi: pakai localStorage saja ---
+          const cachedData = localCache.get('lhpk:dataset');
+          const cachedEdb = localCache.get('lhpk:employee-db');
+          if (cachedData) setData(JSON.parse(cachedData));
+          if (cachedEdb) setEmployeeDb(JSON.parse(cachedEdb));
+          else localCache.set('lhpk:employee-db', JSON.stringify(EMPLOYEE_DB_SEED));
+        }
+      } catch (e) {
+        // tidak ada data tersimpan sama sekali -> tampil kosong, itu wajar
+      } finally {
+        setInitLoading(false);
+      }
+    })();
+  }, []);
+
+  const employeeDbMap = useMemo(
+    () => Object.fromEntries(employeeDb.map((e) => [e.nik, e])),
+    [employeeDb]
+  );
+
+  // Hanya karyawan yang terdaftar di database yang masuk ke rekap
+  const filteredData = useMemo(() => {
+    if (!data) return null;
+    const kept = data.employees
+      .filter((e) => employeeDbMap[e.nik])
+      .map((e) => ({ ...e, nama: employeeDbMap[e.nik].nama || e.nama, bagian: employeeDbMap[e.nik].bagian || '' }));
+    return { ...data, employees: kept, totalParsed: data.employees.length, excludedCount: data.employees.length - kept.length };
+  }, [data, employeeDbMap]);
+
+  const persistEmployeeDb = useCallback((next) => {
+    localCache.set('lhpk:employee-db', JSON.stringify(next));
+    if (sheetsApi.configured()) {
+      sheetsApi.post('saveEmployeeDb', { employees: next }).catch(() => {
+        setSyncError('Gagal menyimpan database karyawan ke Google Sheets (tersimpan lokal saja untuk sementara).');
+      });
+    }
+  }, []);
+
+  const handleAddEmployee = useCallback((emp) => {
+    setEmployeeDb((prev) => {
+      const next = [...prev, emp];
+      persistEmployeeDb(next);
+      return next;
+    });
+  }, [persistEmployeeDb]);
+
+  const handleDeleteEmployee = useCallback((nik) => {
+    setEmployeeDb((prev) => {
+      const next = prev.filter((e) => e.nik !== nik);
+      persistEmployeeDb(next);
+      return next;
+    });
+  }, [persistEmployeeDb]);
+
+  const handleFile = useCallback(async (file) => {
+    setBusy(true); setError(null); setSyncError(null);
+    try {
+      const parsed = await parseLhpkFile(file);
+      const period = periodKeyOf(parsed);
+      const newLastDay = computeLastDataDay(parsed);
+
+      // Cek apakah periode (bulan) ini sudah ada datanya di Google Sheets,
+      // dan apakah cakupan tanggal file baru lebih sedikit dari yang tersimpan.
+      if (sheetsApi.configured() && period) {
+        try {
+          const existing = await sheetsApi.get('getPeriod', { period });
+          if (existing.value) {
+            const existingParsed = JSON.parse(existing.value);
+            const existingLastDay = computeLastDataDay(existingParsed);
+            if (newLastDay < existingLastDay) {
+              const proceed = window.confirm(
+                `Data tersimpan untuk ${parsed.monthLabelId} sudah mencakup sampai tanggal ${existingLastDay}, ` +
+                `sedangkan file ini hanya sampai tanggal ${newLastDay}.\n\n` +
+                `Tetap timpa dengan data yang lebih sedikit ini?`
+              );
+              if (!proceed) { setBusy(false); return; }
+            }
+          }
+        } catch (checkErr) {
+          // gagal cek existing (mis. offline) -> tetap lanjut simpan, jangan blokir upload
+        }
+      }
+
+      setData(parsed);
+      setSelectedNik(null);
+      localCache.set('lhpk:dataset', JSON.stringify(parsed));
+
+      if (sheetsApi.configured() && period) {
+        try {
+          await sheetsApi.post('savePeriod', {
+            period,
+            label: parsed.monthLabelId || period,
+            value: JSON.stringify(parsed),
+            lastDataDay: newLastDay,
+          });
+        } catch (saveErr) {
+          setSyncError('Data tampil tapi gagal tersimpan ke Google Sheets — cek koneksi/URL Apps Script.');
+        }
+      }
+    } catch (e) {
+      setError(e.message || 'Gagal membaca file. Pastikan formatnya sesuai export LHPK.');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  if (initLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-slate-400 text-sm">Memuat…</div>;
+  }
+
+  return (
+    <div className="idm-shell">
+      <style>{FONT_IMPORT}</style>
+      <div className="idm-brandbar">
+        <div className="idm-logo" aria-label="Indomaret"></div>
+        <div className="idm-brand-title">
+          <h1>REKAP PRESENSI</h1>
+          <p>Rekap Presensi Karyawan</p>
+        </div>
+        {tab !== 'karyawan' && (
+          <div className="idm-top-actions">
+            <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={busy}
+              className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-white"
+              style={{ backgroundColor:'#005baa' }}>
+              {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD LHPK
+            </button>
+            {data && (
+              <>
+                <button onClick={() => window.location.reload()}
+                  className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
+                  style={{ backgroundColor:'#fff',color:'#374151' }}>
+                  <RefreshCw size={15}/> REFRESH
+                </button>
+                <button onClick={() => document.querySelector('[data-download-csv]')?.click()}
+                  className="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold"
+                  style={{ backgroundColor:'#ffd100',color:'#111827' }}>
+                  <Download size={15}/> EXPORT
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="idm-nav">
+        {[
+          { id: 'rekap', label: 'REKAP PRESENSI', icon: Users },
+          { id: 'pelanggaran', label: 'RINCIAN PELANGGARAN', icon: AlertTriangle },
+          { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
+          { id: 'karyawan', label: 'DATABASE KARYAWAN', icon: UserCog },
+        ].map((t) => {
+          const Icon = t.icon;
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={() => setTab(t.id)} className={active ? 'idm-active' : ''}>
+              <span className="inline-flex items-center gap-2"><Icon size={15} /> {t.label}</span>
+            </button>
+          );
+        })}
+        <button onClick={() => setTab(tab)} className="ml-auto" title="Pengaturan tampilan">
+          <span className="inline-flex items-center gap-2"><span style={{fontSize:16}}>⚙</span> PENGATURAN</span>
+        </button>
+      </div>
+
+      <div className="idm-content">
+        {data && (
+          <div className="idm-period">
+            <div><strong>{data.monthLabelId || 'Periode tidak diketahui'}</strong>{data.meta?.cabang ? `  ·  ${data.meta.cabang}` : ''}{data.meta?.divisi ? `  ·  ${data.meta.divisi}` : ''}</div>
+            <div>{data.employees.length} karyawan</div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border px-3.5 py-2.5 text-sm" style={{ borderColor: '#fecdd3', backgroundColor: '#fff1f2', color: '#9f1239' }}>
+            <FileWarning size={15} className="mt-0.5 shrink-0" />
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
+          </div>
+        )}
+
+        {syncError && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border px-3.5 py-2.5 text-sm" style={{ borderColor: '#fde68a', backgroundColor: '#fffbeb', color: '#92400e' }}>
+            <FileWarning size={15} className="mt-0.5 shrink-0" />
+            <span>{syncError}</span>
+            <button onClick={() => setSyncError(null)} className="ml-auto"><X size={14} /></button>
+          </div>
+        )}
+
+        {tab === 'karyawan' && (
+          <KaryawanTab employeeDb={employeeDb} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />
+        )}
+        {tab !== 'karyawan' && !data && (
+          <div className="flex flex-col items-center justify-center text-center py-16 text-slate-400">
+            <FileWarning size={28} className="mb-3" />
+            <p className="text-sm font-medium text-slate-500">Belum ada data presensi</p>
+            <p className="text-xs mt-1">Klik tombol <strong>UPLOAD LHPK</strong> di kanan atas untuk memuat data.</p>
+          </div>
+        )}
+        {tab === 'rekap' && data && (
+          <RekapTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
+        )}
+        {tab === 'pelanggaran' && data && (
+          <PelanggaranTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
+        )}
+        {tab === 'detail' && data && (
+          <DetailTab data={filteredData} selectedNik={selectedNik} onSelectEmployee={setSelectedNik} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+</script>
+</body>
+</html>
