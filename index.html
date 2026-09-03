@@ -160,7 +160,7 @@ button{transition:all .16s ease}
 }
 .rekap-table .status-cell.status-blank { background: #fff !important; color: #111827; }
 .rekap-table .status-cell.status-OK { background: #fff !important; color: #111827; }
-.rekap-table .status-cell.status-DT { background: #f5d0fe !important; color: #c026d3 !important; }
+.rekap-table .status-cell.status-DT { background: #facc15 !important; color: #a16207 !important; }
 .rekap-table .status-cell.status-OFF { background: #ffd9d9 !important; color: #ef1111 !important; }
 .rekap-table .status-cell.status-S { background: #ffedd5 !important; color: #c2410c !important; }
 .rekap-table .status-cell.status-C { background: #dcfce7 !important; color: #16a34a !important; }
@@ -325,14 +325,14 @@ const EMPLOYEE_DB_SEED = [
 
 const CODE_META = {
   OK:  { label: 'Hadir',                 short: 'OK',  ink: '#065f46', bg: '#ecfdf5', ring: '#a7f3d0' },
-  DT:  { label: 'Datang Terlambat',      short: 'DT',  ink: '#92400e', bg: '#fffbeb', ring: '#fde68a' },
+  DT:  { label: 'Datang Terlambat',      short: 'DT',  ink: '#a16207', bg: '#facc15', ring: '#eab308' },
   OFF: { label: 'Libur',                 short: 'OFF', ink: '#334155', bg: '#f1f5f9', ring: '#cbd5e1' },
-  S:   { label: 'Sakit',                 short: 'S',   ink: '#075985', bg: '#f0f9ff', ring: '#bae6fd' },
+  S:   { label: 'Sakit',                 short: 'S',   ink: '#c2410c', bg: '#ffedd5', ring: '#fdba74' },
   C:   { label: 'Cuti',                  short: 'C',   ink: '#5b21b6', bg: '#f5f3ff', ring: '#ddd6fe' },
-  M:   { label: 'Mangkir',               short: 'M',   ink: '#9f1239', bg: '#fff1f2', ring: '#fecdd3' },
+  M:   { label: 'Mangkir',               short: 'M',   ink: '#ffffff', bg: '#dc2626', ring: '#b91c1c' },
   LAM: { label: 'Lupa Absen Masuk',      short: 'LAM', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
   LAP: { label: 'Lupa Absen Pulang',     short: 'LAP', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
-  TSM: { label: 'Salah TSM',              short: 'TSM', ink: '#991b1b', bg: '#fee2e2', ring: '#fecaca' },
+  TSM: { label: 'Salah TSM',              short: 'TSM', ink: '#581c87', bg: '#e9d5ff', ring: '#c084fc' },
   IDT: { label: 'Ijin Datang Terlambat', short: 'IDT', ink: '#854d0e', bg: '#fefce8', ring: '#fef08a' },
   DL:  { label: 'Dinas Luar Kota',       short: 'DL',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
   IP:  { label: 'Ijin Pulang',           short: 'IP',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
@@ -350,7 +350,7 @@ function toMinutes(hhmm) {
   return parts[0] * 60 + parts[1];
 }
 
-const SHIFT_TABLE = {
+const DEFAULT_SHIFT_TABLE = {
   '324':   { masuk: '0:00',  pulang: '8:00' },
   '9324':  { masuk: '0:00',  pulang: '6:00' },
   '11':    { masuk: '1:00',  pulang: '9:00' },
@@ -415,6 +415,14 @@ const SHIFT_TABLE = {
   '2100':  { masuk: '10:00', pulang: '18:30', jumat: true },
   '92100': { masuk: '10:00', pulang: '16:30', jumat: true },
 };
+
+const SHIFT_TABLE = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('lhpk-shift-table') || 'null');
+    if (saved && typeof saved === 'object') return { ...DEFAULT_SHIFT_TABLE, ...saved };
+  } catch (e) {}
+  return { ...DEFAULT_SHIFT_TABLE };
+})();
 
 function shiftInfoFor(shiftCode) {
   const key = (shiftCode || '').toString().trim();
@@ -1257,7 +1265,89 @@ const NAV_TABS = [
   { id: 'dijelaskan', label: 'SUDAH DIJELASKAN', icon: CheckCircle2 },
   { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
   { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
+  { id: 'pola-shift', label: 'DATA / POLA SHIFT', icon: Clock },
 ];
+
+function PolaShiftTab() {
+  const [rows, setRows] = useState(() => Object.entries(SHIFT_TABLE).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
+  const [showForm, setShowForm] = useState(false);
+  const [kode, setKode] = useState('');
+  const [masuk, setMasuk] = useState('');
+  const [pulang, setPulang] = useState('');
+  const [jumat, setJumat] = useState(false);
+  const [error, setError] = useState('');
+
+  const refresh = () => setRows(Object.entries(SHIFT_TABLE).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
+  const saveLocal = () => localStorage.setItem('lhpk-shift-table', JSON.stringify(SHIFT_TABLE));
+
+  const submit = (e) => {
+    e.preventDefault();
+    const k = kode.trim();
+    if (!k || !masuk || !pulang) { setError('Kode shift, jam masuk, dan jam pulang wajib diisi.'); return; }
+    if (!/^\d{1,6}$/.test(k)) { setError('Kode shift hanya boleh berupa angka.'); return; }
+    const validTime = (v) => /^([01]?\d|2[0-3]):[0-5]\d$/.test(v);
+    if (!validTime(masuk) || !validTime(pulang)) { setError('Format jam harus HH:MM.'); return; }
+    SHIFT_TABLE[k] = { masuk, pulang, ...(jumat ? { jumat: true } : {}) };
+    saveLocal();
+    refresh();
+    setKode(''); setMasuk(''); setPulang(''); setJumat(false); setError(''); setShowForm(false);
+  };
+
+  const remove = (k) => {
+    if (!window.confirm(`Hapus pola shift ${k}?`)) return;
+    delete SHIFT_TABLE[k];
+    saveLocal();
+    refresh();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-700">Data / Pola Shift</p>
+          <p className="text-xs text-slate-500 mt-0.5">Atur kode shift beserta jam masuk dan pulangnya.</p>
+        </div>
+        <button
+          onClick={() => { setShowForm((v) => !v); setError(''); }}
+          className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+          style={{ backgroundColor:'#005baa' }}
+        ><Plus size={14} /> Tambah Data</button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-white p-3 mb-4 shadow-sm">
+          <p className="text-xs font-semibold text-slate-600 mb-2.5">Tambah Pola Shift Baru</p>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="text-[11px] text-slate-500">Kode Shift<input value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} placeholder="Contoh: 325" className="block w-28 mt-1 text-xs px-2.5 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
+            <label className="text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(e.target.value)} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
+            <label className="text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(e.target.value)} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
+            <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-1.5"><input type="checkbox" checked={jumat} onChange={e=>setJumat(e.target.checked)} /> Khusus Jumat</label>
+            <button type="submit" className="rounded-md px-3 py-1.5 text-xs font-semibold text-white" style={{backgroundColor:'#16a34a'}}>Simpan</button>
+          </div>
+          {error && <p className="text-[11px] mt-2 text-rose-600">{error}</p>}
+        </form>
+      )}
+
+      <div className="rounded-lg border border-slate-200 overflow-auto bg-white" style={{maxHeight:'60vh'}}>
+        <table className="w-full text-[11px] border-collapse">
+          <thead><tr className="bg-blue-700 text-white">
+            <th className="px-2 py-1.5 text-center">No</th><th className="px-2 py-1.5 text-center">Kode Shift</th><th className="px-2 py-1.5 text-center">Masuk</th><th className="px-2 py-1.5 text-center">Pulang</th><th className="px-2 py-1.5 text-center">Keterangan</th><th className="px-2 py-1.5 text-center">Aksi</th>
+          </tr></thead>
+          <tbody>
+            {rows.map(([k,v],i)=><tr key={k} className={i%2===0?'bg-white':'bg-slate-50'}>
+              <td className="px-2 py-1 border-t border-slate-100 text-center text-slate-400">{i+1}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center font-semibold text-slate-700">{k}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center">{v.masuk}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center">{v.pulang}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center text-slate-500">{v.jumat ? 'Khusus Jumat' : 'Reguler'}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center"><button onClick={()=>remove(k)} className="inline-flex items-center justify-center rounded-md p-1 text-rose-500 hover:bg-rose-50" title="Hapus"><Trash2 size={13}/></button></td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 function SideMenu({ tab, onSelect, onClose }) {
   return (
@@ -1687,6 +1777,9 @@ function App() {
         )}
         {tab === 'karyawan' && (
           <KaryawanTab employeeDb={employeeDb} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />
+        )}
+        {tab === 'pola-shift' && (
+          <PolaShiftTab />
         )}
       </div>
       {showSideMenu && (
