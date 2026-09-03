@@ -202,6 +202,41 @@ button.text-white{background-color:var(--idm-red)!important}
 
 
 
+
+<style>
+  /* Detail Karyawan: isi halaman penuh, teks 10px, tinggi baris adaptif */
+  .detail-karyawan-layout {
+    width: 100%;
+  }
+  .detail-karyawan-list {
+    min-height: 0;
+  }
+  .detail-karyawan-list button {
+    min-height: var(--detail-row-h, 22px);
+    line-height: 1.1 !important;
+  }
+  .detail-karyawan-list .text-\[10px\] {
+    font-size: 10px !important;
+  }
+  .detail-harian-table {
+    font-size: 10px !important;
+  }
+  .detail-harian-table th,
+  .detail-harian-table td {
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+    height: var(--detail-row-h, 20px);
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+  .detail-harian-table thead th {
+    height: 30px;
+  }
+  @media (max-height: 700px) {
+    .detail-karyawan-layout { height: calc(100vh - 135px) !important; }
+    .detail-harian-table th, .detail-harian-table td { font-size: 9px !important; }
+  }
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -1011,8 +1046,8 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
   if (!selected) return null;
 
   return (
-    <div className="flex gap-4" style={{ height: '72vh' }}>
-      <div className="w-64 shrink-0 rounded-lg border border-slate-200 flex flex-col overflow-hidden bg-white">
+    <div className="detail-karyawan-layout flex gap-4" style={{ height: 'calc(100vh - 150px)', minHeight: '420px' }}>
+      <div className="detail-karyawan-list w-64 shrink-0 rounded-lg border border-slate-200 flex flex-col overflow-hidden bg-white">
         <div className="p-2.5 border-b border-slate-100">
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-2.5 text-slate-400" />
@@ -1020,22 +1055,22 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari nama / NIK…"
-              className="w-full text-sm pl-7 pr-2 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full text-[10px] pl-7 pr-2 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
             />
           </div>
         </div>
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1" style={{ "--detail-row-h": `clamp(20px, calc((100vh - 220px) / ${Math.max(1, filtered.length)}), 34px)` }}>
           {filtered.map((emp) => {
             const active = emp.nik === selected.nik;
             return (
               <button
                 key={emp.nik}
                 onClick={() => onSelectEmployee(emp.nik)}
-                className="w-full text-left px-3 py-2.5 border-b border-slate-50 flex items-center justify-between gap-2"
+                className="w-full text-left px-3 py-1.5 border-b border-slate-50 flex items-center justify-between gap-2"
                 style={{ backgroundColor: active ? '#005baa' : 'transparent' }}
               >
                 <div className="min-w-0">
-                  <div className="text-[13px] font-medium truncate" style={{ color: active ? '#fff' : '#0f172a' }}>{emp.nama}</div>
+                  <div className="text-[10px] font-medium truncate" style={{ color: active ? '#fff' : '#0f172a' }}>{emp.nama}</div>
                 </div>
                 {emp.pelanggaran > 0 && (
                   <span
@@ -1052,7 +1087,7 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto pr-1">
+      <div className="detail-karyawan-content flex-1 min-w-0 overflow-y-auto pr-1">
         <div className="flex items-baseline gap-2.5 mb-4">
           <h2 className="text-lg font-semibold text-slate-900" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>{selected.nama}</h2>
           <span className="text-xs text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{selected.nik}</span>
@@ -1071,19 +1106,19 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
           <StatCard label="Total Pelanggaran" value={selected.pelanggaran} tone={selected.pelanggaran ? 'amber' : 'slate'} />
         </div>
 
-        <p className="text-xs font-medium text-slate-500 mb-2">Rincian harian</p>
+        <p className="text-[10px] font-medium text-slate-500 mb-1">Rincian harian</p>
         <div className="rounded-lg border border-slate-200 overflow-hidden">
-          <table className="w-full text-[11px] table-fixed" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <table className="detail-harian-table w-full text-[10px] table-fixed" style={{ fontFamily: "'IBM Plex Sans', sans-serif", "--detail-row-h": `clamp(14px, calc((100vh - 250px) / ${Math.max(1, data.monthLength)}), 26px)` }}>
             <thead>
               <tr className="bg-slate-50 text-slate-500">
-                <th className="text-left px-1.5 py-1 font-medium">Tanggal</th>
-                <th className="text-center px-1.5 py-1 font-medium">Shift</th>
-                <th className="text-center px-1.5 py-1 font-medium">Masuk<br/>Seharusnya</th>
-                <th className="text-center px-1.5 py-1 font-medium">Pulang<br/>Seharusnya</th>
-                <th className="text-center px-1.5 py-1 font-medium">Masuk</th>
-                <th className="text-center px-1.5 py-1 font-medium">Pulang</th>
-                <th className="text-left px-1.5 py-1 font-medium">Status</th>
-                <th className="text-center px-1.5 py-1 font-medium">Kode</th>
+                <th className="text-left px-1.5 py-0.5 font-medium">Tanggal</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Shift</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Masuk<br/>Seharusnya</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Pulang<br/>Seharusnya</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Masuk</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Pulang</th>
+                <th className="text-left px-1.5 py-0.5 font-medium">Status</th>
+                <th className="text-center px-1.5 py-0.5 font-medium">Kode</th>
               </tr>
             </thead>
             <tbody>
@@ -1093,14 +1128,14 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
                 const sInfo = rec ? shiftInfoFor(rec.shift) : null;
                 return (
                   <tr key={d} className="border-t border-slate-100">
-                    <td className="px-1.5 py-1 text-slate-700 truncate">{String(d).padStart(2, '0')} <span className="text-slate-400">{wk}</span></td>
-                    <td className="px-1.5 py-1 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.shift || '—'}</td>
-                    <td className="px-1.5 py-1 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.masuk : '—'}</td>
-                    <td className="px-1.5 py-1 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.pulang : '—'}</td>
-                    <td className="px-1.5 py-1 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.masuk && rec.masuk !== '00:00' ? rec.masuk : '—'}</td>
-                    <td className="px-1.5 py-1 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.pulang && rec.pulang !== '00:00' ? rec.pulang : '—'}</td>
-                    <td className="px-1.5 py-1 text-slate-500 truncate">{rec ? (CODE_META[rec.code]?.label || rec.status) : '—'}</td>
-                    <td className="px-1.5 py-1 text-center"><Badge code={rec?.code || '-'} /></td>
+                    <td className="px-1.5 py-0.5 text-slate-700 truncate">{String(d).padStart(2, '0')} <span className="text-slate-400">{wk}</span></td>
+                    <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.shift || '—'}</td>
+                    <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.masuk : '—'}</td>
+                    <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.pulang : '—'}</td>
+                    <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.masuk && rec.masuk !== '00:00' ? rec.masuk : '—'}</td>
+                    <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.pulang && rec.pulang !== '00:00' ? rec.pulang : '—'}</td>
+                    <td className="px-1.5 py-0.5 text-slate-500 truncate">{rec ? (CODE_META[rec.code]?.label || rec.status) : '—'}</td>
+                    <td className="px-1.5 py-0.5 text-center"><Badge code={rec?.code || '-'} /></td>
                   </tr>
                 );
               })}
