@@ -447,6 +447,12 @@ function deriveCode(status, masuk, shiftCode) {
         return { code: 'TSM' };
       }
 
+      // Datang Terlambat ditampilkan langsung pada kolom tanggal.
+      // Terlambat sampai dengan 1 jam = DT; lebih dari 1 jam = TSM.
+      if (total > scheduled) {
+        return { code: 'DT', lateMin: total - scheduled };
+      }
+
       return { code: 'OK' };
     }
     return { code: 'OK' };
