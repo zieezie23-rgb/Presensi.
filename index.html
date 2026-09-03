@@ -28,13 +28,15 @@ button{transition:all .16s ease}
 .idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-blue) 0 72%,var(--idm-yellow) 72% 100%)}
 .idm-logo{width:106px;height:42px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
 .idm-logo:before{content:"Indomaret";font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:15px;color:#005baa;background:#fff;border:2px solid #005baa;border-radius:50%;padding:3px 12px;line-height:1;white-space:nowrap}
+.idm-menu-btn{width:40px;height:40px;border:0!important;border-radius:7px;background:rgba(255,255,255,.12)!important;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none!important}
+.idm-menu-btn:hover{background:rgba(255,255,255,.22)!important}
 .idm-brand-title{margin-left:12px;color:#fff;line-height:1.08}
 .idm-brand-title h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
 .idm-brand-title p{margin:2px 0 0;font-size:10px;font-weight:500}
 .idm-top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
 .idm-top-actions button{border:0!important;box-shadow:none!important}
-.idm-nav{height:44px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
-.idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:44px;padding:0 15px!important;border-radius:0!important;transform:none!important;font-size:11px!important;font-weight:600!important}
+.idm-nav{height:34px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
+.idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:34px;padding:0 12px!important;border-radius:0!important;transform:none!important;font-size:9px!important;font-weight:600!important}
 .idm-nav button:hover{color:var(--idm-red)!important}
 .idm-nav button.idm-active{color:var(--idm-red)!important}
 .idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--idm-red);border-radius:4px 4px 0 0}
@@ -145,7 +147,7 @@ button{transition:all .16s ease}
 
 .pelanggaran-table th,.pelanggaran-table td{font-size:13px!important;line-height:1.25!important}
 .pelanggaran-table input{font-size:13px!important}
-@media(max-width:900px){.idm-brandbar{min-height:50px;padding:3px 10px}.idm-logo{width:86px;height:36px}.idm-logo:before{font-size:12px;padding:2px 7px}.idm-brand-title h1{font-size:15px}.idm-brand-title p{font-size:9px}.idm-nav{height:40px}.idm-nav button{height:40px;padding:0 10px!important;font-size:10px!important}.idm-top-actions{gap:4px}.idm-top-actions button{padding:5px 7px!important;font-size:10px!important}}
+@media(max-width:900px){.idm-brandbar{min-height:50px;padding:3px 10px}.idm-logo{width:86px;height:36px}.idm-logo:before{font-size:12px;padding:2px 7px}.idm-brand-title h1{font-size:15px}.idm-brand-title p{font-size:9px}.idm-nav{height:32px}.idm-nav button{height:32px;padding:0 8px!important;font-size:8px!important}.idm-top-actions{gap:4px}.idm-top-actions button{padding:5px 7px!important;font-size:10px!important}}
 
 .upload-success{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 12px;width:max-content;max-width:60%;border:1px solid #bbf7d0;border-radius:7px;background:#f0fdf4;color:#166534;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:20}
 /* common UI */
@@ -195,6 +197,8 @@ const Building2 = makeIcon(<><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18Z
 const Plus = makeIcon(<><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>);
 const Trash2 = makeIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>);
 const UserCog = makeIcon(<><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h3" /><circle cx="18" cy="18" r="3" /><path d="M18 14.5v1M18 20.5v1M14.5 18h1M20.5 18h1M15.5 15.5l.7.7M20.3 20.3l.7.7M15.5 20.5l.7-.7M20.3 15.7l.7-.7" /></>);
+const Lock = makeIcon(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>);
+const Menu = makeIcon(<><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>);
 
 /* ---------------------------------------------------------------------- */
 /*  Constants & helpers                                                    */
@@ -1143,19 +1147,135 @@ const sheetsApi = {
 const DATABASE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1VqZTTI69xP9zSDN4OOLM2YYkgti86z252gwDRThYHUU/edit?gid=0#gid=0';
 // Ganti kode di bawah ini sesuai kode akses yang diinginkan.
 const DATABASE_ACCESS_CODE = '00000';
-async function openDatabaseSpreadsheet() {
-  const code = window.prompt('Masukkan kode akses untuk membuka database:');
-  if (code === null) return; // dibatalkan
-  if (code.trim() !== DATABASE_ACCESS_CODE) {
-    window.alert('Kode akses salah.');
-    return;
-  }
+async function openDatabaseSpreadsheetUrl() {
   try {
     const res = await sheetsApi.get('getSpreadsheetUrl');
     if (res && res.url) { window.open(res.url, '_blank', 'noopener,noreferrer'); return; }
   } catch (e) {}
   // Fallback: arahkan langsung ke spreadsheet database jika backend belum menyediakan URL.
   window.open(DATABASE_SPREADSHEET_URL, '_blank', 'noopener,noreferrer');
+}
+
+const NAV_TABS = [
+  { id: 'rekap', label: 'REKAP PRESENSI', icon: Users },
+  { id: 'pelanggaran', label: 'RINCIAN PELANGGARAN', icon: AlertTriangle },
+  { id: 'dijelaskan', label: 'SUDAH DIJELASKAN', icon: CheckCircle2 },
+  { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
+  { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
+];
+
+function SideMenu({ tab, onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(15,23,42,.5)' }} />
+      <div
+        className="absolute left-0 top-0 bg-white shadow-2xl flex flex-col rounded-br-xl overflow-hidden"
+        style={{ width: 220, maxWidth: '75vw' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="idm-brandbar" style={{ minHeight: 0, padding: '14px 16px' }}>
+          <div className="idm-brand-title" style={{ marginLeft: 0 }}>
+            <h1 style={{ fontSize: 13 }}>MENU</h1>
+          </div>
+          <button onClick={onClose} className="ml-auto" style={{ color: '#fff' }} aria-label="Tutup">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="py-2">
+          {NAV_TABS.map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => { onSelect(t.id); onClose(); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-semibold"
+                style={{
+                  color: active ? 'var(--idm-red)' : '#374151',
+                  backgroundColor: active ? '#fff1f1' : 'transparent',
+                  borderLeft: active ? '3px solid var(--idm-red)' : '3px solid transparent',
+                }}
+              >
+                <Icon size={14} /> {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+function AccessCodeModal({ onClose, onSuccess }) {
+  const [code, setCode] = useState('');
+  const [err, setErr] = useState('');
+  const [shake, setShake] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const submit = () => {
+    if (code.trim() === DATABASE_ACCESS_CODE) {
+      onSuccess();
+    } else {
+      setErr('Kode akses salah. Coba lagi.');
+      setCode('');
+      setShake(true);
+      window.setTimeout(() => setShake(false), 400);
+      inputRef.current?.focus();
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: 'rgba(15,23,42,.55)' }}
+      onClick={onClose}
+    >
+      <style>{`
+        @keyframes idmShake { 10%,90%{transform:translateX(-1px)} 20%,80%{transform:translateX(2px)} 30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)} }
+        .idm-shake { animation: idmShake .4s ease; }
+      `}</style>
+      <div
+        className={`w-full max-w-xs rounded-xl bg-white overflow-hidden shadow-2xl ${shake ? 'idm-shake' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="idm-brandbar" style={{ minHeight: 0, padding: '14px 16px' }}>
+          <div className="idm-brand-title" style={{ marginLeft: 0, textAlign: 'center', flex: 1 }}>
+            <h1 style={{ fontSize: 13 }}>AKSES DATABASE</h1>
+          </div>
+          <button onClick={onClose} style={{ color: '#fff' }} aria-label="Tutup">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="px-5 pt-5 pb-4 flex flex-col items-center text-center">
+          <span className="inline-flex items-center justify-center rounded-full mb-2" style={{ width: 30, height: 30, backgroundColor: '#fff1f1', color: '#d71920' }}>
+            <Lock size={15} />
+          </span>
+          <p className="text-xs text-slate-600 mb-3">Masukkan kode akses</p>
+          <input
+            ref={inputRef}
+            type="password"
+            inputMode="numeric"
+            value={code}
+            onChange={(e) => { setCode(e.target.value); setErr(''); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onClose(); }}
+            placeholder="Kode akses"
+            className="w-full text-sm px-3 py-2 rounded-md border outline-none tracking-[4px] text-center"
+            style={{ borderColor: err ? '#ef4444' : '#d7dee7' }}
+          />
+          {err && <p className="mt-1.5 text-[11px] font-medium" style={{ color: '#dc2626' }}>{err}</p>}
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <button onClick={onClose} className="flex-1 rounded-md px-3 py-2 text-xs font-semibold" style={{ backgroundColor: '#f1f5f9', color: '#374151' }}>
+            Batal
+          </button>
+          <button onClick={submit} className="flex-1 rounded-md px-3 py-2 text-xs font-semibold text-white" style={{ backgroundColor: '#005baa' }}>
+            Buka
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const localCache = {
@@ -1187,6 +1307,8 @@ function App() {
   const [initLoading, setInitLoading] = useState(true);
   const [syncError, setSyncError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showSideMenu, setShowSideMenu] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -1382,7 +1504,9 @@ function App() {
     <div className="idm-shell">
       <style>{FONT_IMPORT}</style>
       <div className="idm-brandbar">
-        <div className="idm-logo" aria-label="Indomaret"></div>
+        <button onClick={() => setShowSideMenu(true)} aria-label="Menu" className="idm-menu-btn">
+          <Menu size={22} color="#fff" />
+        </button>
         <div className="idm-brand-title">
           <h1>REKAP PRESENSI</h1>
           <p>{data ? (data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
@@ -1411,31 +1535,13 @@ function App() {
                   style={{ backgroundColor:'#ffd100',color:'#111827' }}>
                   <Download size={15}/> EXPORT
                 </button>
-                        <button onClick={openDatabaseSpreadsheet} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
+                        <button onClick={() => setShowAccessModal(true)} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
                   className="inline-flex items-center justify-center rounded-md px-2.5 py-2.5 text-white"
                   style={{ backgroundColor:'#d71920' }}>⚙</button>
               </>
             )}
           </div>
         )}
-      </div>
-
-      <div className="idm-nav">
-        {[
-          { id: 'rekap', label: 'REKAP PRESENSI', icon: Users },
-          { id: 'pelanggaran', label: 'RINCIAN PELANGGARAN', icon: AlertTriangle },
-          { id: 'dijelaskan', label: 'SUDAH DIJELASKAN', icon: CheckCircle2 },
-          { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
-          { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
-        ].map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          return (
-            <button key={t.id} onClick={() => setTab(t.id)} className={active ? 'idm-active' : ''}>
-              <span className="inline-flex items-center gap-2"><Icon size={15} /> {t.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       <div className="idm-content">
@@ -1485,6 +1591,15 @@ function App() {
           <KaryawanTab employeeDb={employeeDb} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />
         )}
       </div>
+      {showSideMenu && (
+        <SideMenu tab={tab} onSelect={setTab} onClose={() => setShowSideMenu(false)} />
+      )}
+      {showAccessModal && (
+        <AccessCodeModal
+          onClose={() => setShowAccessModal(false)}
+          onSuccess={() => { setShowAccessModal(false); openDatabaseSpreadsheetUrl(); }}
+        />
+      )}
     </div>
   );
 }
