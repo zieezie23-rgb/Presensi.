@@ -15,6 +15,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   body { margin: 0; }
+
+/* Rekap Presensi: hilangkan kotak/container luar.
+   Border tetap hanya pada tabel dan sel tabel. */
+.rekap-card,
+.rekap-container,
+.rekap-wrapper,
+.rekap-panel {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.rekap-card > .rekap-table,
+.rekap-container > .rekap-table,
+.rekap-wrapper > .rekap-table,
+.rekap-panel > .rekap-table {
+  border-collapse: collapse;
+}
+
+/* Rekap Presensi: font tabel 10px dan data reguler */
+.rekap-table,
+.rekap-table th,
+.rekap-table td,
+.rekap-table thead,
+.rekap-table tbody,
+.rekap-table tr,
+.rekap-table .kode-text,
+.rekap-table .status-cell,
+.rekap-table td[class*="sum-"] {
+  font-size: 10px !important;
+}
+.rekap-table td {
+  font-weight: 400 !important;
+}
 </style>
 
 <style id="indomaret-premium-theme">
@@ -44,34 +78,37 @@ button{transition:all .16s ease}
 .idm-period strong{color:#1f2937;font-size:13px}
 /* Rekap table: compact, single-line, strong grid */
 .rekap-table {
-  width:100% !important;
-  font-size: 9px !important;
+  width:max-content !important;
+  min-width:0 !important;
+  font-size: 10px !important;
   border-collapse: collapse !important;
+  table-layout: fixed !important;
+  border: 1px solid #cbd5e1 !important;
 }
 .rekap-table th, .rekap-table td {
-  border: 1px solid #94a3b8 !important;
+  border: 1px solid #cbd5e1;
   white-space: nowrap !important;
 }
 .rekap-table th {
-  font-size: 9px !important;
+  font-size: 10px !important;
   padding: 2px 1px !important;
   line-height: 1.15 !important;
 }
 .rekap-table td {
-  font-size: 9px !important;
+  font-size: 10px !important;
   padding: 0 !important;
-  line-height: 18px !important;
-  height: 18px !important;
-  min-height: 18px !important;
+  line-height: var(--rekap-row-h, 16px) !important;
+  height: var(--rekap-row-h, 16px) !important;
+  min-height: 0 !important;
   box-sizing: border-box !important;
 }
 .rekap-table tbody tr {
-  height: 20px !important;
-  min-height: 20px !important;
+  height: var(--rekap-row-h, 16px) !important;
+  min-height: 0 !important;
 }
 .rekap-table tbody td {
-  height: 18px !important;
-  max-height: 18px !important;
+  height: var(--rekap-row-h, 16px) !important;
+  max-height: none !important;
   box-sizing: border-box !important;
 }
 .rekap-table th {
@@ -84,24 +121,42 @@ button{transition:all .16s ease}
   max-width: none;
   padding: 0 8px !important;
 }
+
+.rekap-table .nama-cell,
+.rekap-table .nik-cell,
+.rekap-table .bagian-cell {
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.rekap-table .nama-cell { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .col-no { width:20px !important; min-width:20px !important; max-width:20px !important; }
+.rekap-table .col-nama { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .col-nik { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .col-bagian { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .col-tanggal, .rekap-table .col-ringkasan { width:30px !important; min-width:30px !important; max-width:30px !important; }
+.rekap-table .nik-cell { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .bagian-cell { width:100px !important; min-width:100px !important; max-width:100px !important; }
+
 .rekap-table .kode-text {
   display: inline;
-  font-weight: 700;
-  font-size: 8px;
+  font-weight: 400;
+  font-size: 10px;
   line-height: 1;
 }
 /* Spreadsheet-style status cells: color fills the whole cell, no bubble. */
 .rekap-table .status-cell {
-  width: 20px !important;
-  min-width: 20px !important;
-  max-width: 20px !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
   padding: 0 !important;
-  height: 20px !important;
-  min-height: 20px !important;
-  line-height: 20px !important;
+  height: var(--rekap-row-h, 16px) !important;
+  min-height: 0 !important;
+  line-height: var(--rekap-row-h, 16px) !important;
   text-align: center;
   vertical-align: middle;
-  font-weight: 700;
+  font-weight: 400;
 }
 .rekap-table .status-cell.status-blank { background: #fff !important; color: #111827; }
 .rekap-table .status-cell.status-OK { background: #fff !important; color: #111827; }
@@ -118,29 +173,17 @@ button{transition:all .16s ease}
 .rekap-table .status-cell .kode-text { color: inherit !important; }
 /* Make summary columns visually distinct without pill/bubble UI. */
 .rekap-table td[class*="sum-"] {
-  width: 25px !important;
-  min-width: 25px !important;
-  max-width: 25px !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
   padding: 0 !important;
-  line-height: 18px !important;
-  height: 18px !important;
+  line-height: var(--rekap-row-h, 16px) !important;
+  height: var(--rekap-row-h, 16px) !important;
 }
-.rekap-table .sum-OK { color:#111827 !important; background:#fff !important; }
-.rekap-table .sum-OFF { color:#ef1111 !important; background:#fff7f7 !important; }
-.rekap-table .sum-S { color:#c2410c !important; background:#fffaf5 !important; }
-.rekap-table .sum-C { color:#16a34a !important; background:#f6fff8 !important; }
-.rekap-table .sum-IDT { color:#0891b2 !important; background:#f2feff !important; }
-.rekap-table .sum-Pel { color:#b45309 !important; background:#fffaf0 !important; }
-.rekap-table .sum-LAM,
-.rekap-table .sum-LAP { color:#dc2626 !important; background:#fff7f8 !important; }
-.rekap-table .sum-M { color:#b91c1c !important; background:#fff0f0 !important; }
-.rekap-table .sum-DT { color:#c026d3 !important; background:#fff7ff !important; }
-.rekap-table .sum-Minutes,
-.rekap-table .sum-AVG { color:#334155 !important; background:#fafafa !important; }
 .rekap-table tbody tr:hover td:not(.status-cell) { background:#f8fafc !important; }
-.rekap-table-wrap{width:100%;}
+.rekap-table-wrap{width:100%; overflow-x:auto; overflow-y:visible; display:flex; justify-content:center; --rekap-row-h:clamp(10px, calc((100vh - 190px) / max(1, var(--rekap-row-count))), 24px);}
+.rekap-legend { font-size: 12px !important; justify-content:center !important; width:100%; }
 .rekap-table-wrap table{min-width:max-content;}
-@media(max-height:700px){.rekap-table-wrap{height:calc(100vh - 150px)!important;max-height:calc(100vh - 150px)!important}}
 
 
 
@@ -156,6 +199,9 @@ button.text-white{background-color:var(--idm-red)!important}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#edf1f5}::-webkit-scrollbar-thumb{background:#9da9b6;border-radius:8px}
 @media(max-width:900px){.idm-brand-title h1{font-size:18px}.idm-brand-title p{font-size:12px}.idm-logo{width:128px}.idm-nav{overflow-x:auto}.idm-nav button{padding:0 13px!important}.idm-top-actions button{padding-left:9px!important;padding-right:9px!important}}
 </style>
+
+
+
 </head>
 <body>
 <div id="root"></div>
@@ -233,7 +279,7 @@ const MONTH_NUM = {
 };
 const WEEKDAY_ID = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const WEEKDAY_FULL_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-const PELANGGARAN_CODES = ['M', 'LAM', 'LAP'];
+const PELANGGARAN_CODES = ['M', 'LAM', 'LAP', 'TSM'];
 
 /* ---------------------------------------------------------------------- */
 /*  Database karyawan (sumber kebenaran — hanya NIK yang terdaftar di sini */
@@ -286,6 +332,7 @@ const CODE_META = {
   M:   { label: 'Mangkir',               short: 'M',   ink: '#9f1239', bg: '#fff1f2', ring: '#fecdd3' },
   LAM: { label: 'Lupa Absen Masuk',      short: 'LAM', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
   LAP: { label: 'Lupa Absen Pulang',     short: 'LAP', ink: '#9a3412', bg: '#fff7ed', ring: '#fed7aa' },
+  TSM: { label: 'Salah TSM',              short: 'TSM', ink: '#991b1b', bg: '#fee2e2', ring: '#fecaca' },
   IDT: { label: 'Ijin Datang Terlambat', short: 'IDT', ink: '#854d0e', bg: '#fefce8', ring: '#fef08a' },
   DL:  { label: 'Dinas Luar Kota',       short: 'DL',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
   IP:  { label: 'Ijin Pulang',           short: 'IP',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
@@ -391,9 +438,15 @@ function deriveCode(status, masuk, shiftCode) {
       const total = parts[0] * 60 + parts[1];
       const info = shiftInfoFor(shiftCode);
       const scheduled = info ? toMinutes(info.masuk) : LATE_THRESHOLD_MIN;
-      // Dianggap telat hanya jika lebih dari 60 menit dari jadwal masuk.
-      const threshold = scheduled + 60;
-      if (total > threshold) return { code: 'DT', lateMin: total - scheduled };
+      // SALAH TSM:
+      // - masuk aktual lebih dari 4 jam lebih awal dari jadwal, ATAU
+      // - masuk aktual lebih dari 1 jam lebih lambat dari jadwal.
+      const tsmEarlyLimit = scheduled - (4 * 60);
+      const tsmLateLimit = scheduled + 60;
+      if (total < tsmEarlyLimit || total > tsmLateLimit) {
+        return { code: 'TSM' };
+      }
+
       return { code: 'OK' };
     }
     return { code: 'OK' };
@@ -402,7 +455,7 @@ function deriveCode(status, masuk, shiftCode) {
 }
 
 function emptyTotals() {
-  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, IDT: 0, DL: 0, IP: 0, DT: 0, minutes: 0 };
+  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, TSM: 0, IDT: 0, DL: 0, IP: 0, DT: 0, minutes: 0 };
 }
 
 /* ---------------------------------------------------------------------- */
@@ -482,7 +535,7 @@ async function parseLhpkFile(file) {
       totals[rec.code] = (totals[rec.code] || 0) + 1;
       if (rec.code === 'DT') totals.minutes += rec.lateMin;
     }
-    const pelanggaran = totals.DT + totals.LAM + totals.LAP + totals.M;
+    const pelanggaran = totals.DT + totals.LAM + totals.LAP + totals.M + totals.TSM;
     const avgMin = totals.DT > 0 ? Math.round(totals.minutes / totals.DT) : 0;
     return { ...emp, totals, pelanggaran, avgMin };
   });
@@ -609,22 +662,28 @@ function RekapTab({ data, onSelectEmployee }) {
     ctx.font = font;
     return Math.ceil(ctx.measureText(String(text || '')).width) + 2;
   };
-  const NO_W = Math.max(26, measureTextWidth(String(data.employees.length), '9px IBM Plex Sans') + 12);
-  const NAMA_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nama, '9px IBM Plex Sans')));
-  const NIK_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nik, '9px IBM Plex Mono')));
-  const BAGIAN_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.bagian || '—', '9px IBM Plex Sans')));
+  const NO_W = 20;
+  const NAMA_W = 200;
+  const NIK_W = 100;
+  const BAGIAN_W = 100;
   const NAMA_LEFT = NO_W, NIK_LEFT = NO_W + NAMA_W, BAGIAN_LEFT = NO_W + NAMA_W + NIK_W;
 
   // Sort bertingkat: total pelanggaran(z-a) -> avg(z-a) -> hadir(a-z) -> off(z-a) -> sakit(z-a) -> cuti(z-a) -> nama(a-z)
   const pelanggaranMax = useMemo(() => Math.max(0, ...data.employees.map(e => Number(e.pelanggaran) || 0)), [data.employees]);
   const pelanggaranColor = (value) => {
     const v = Number(value) || 0;
-    if (!pelanggaranMax || v <= 0) return { backgroundColor: '#dcfce7', color: '#166534' };
+    if (!pelanggaranMax || v <= 0) return { backgroundColor: '#f0fdf4', color: '#166534' };
     const t = Math.max(0, Math.min(1, v / pelanggaranMax));
-    const r = Math.round(220 + (239 - 220) * t);
-    const g = Math.round(252 + (68 - 252) * t);
-    const b = Math.round(231 + (68 - 231) * t);
-    return { backgroundColor: `rgb(${r}, ${g}, ${b})`, color: t > 0.55 ? '#ffffff' : '#166534' };
+    let c1, c2, u;
+    if (t <= 0.5) {
+      c1 = [240, 253, 244]; c2 = [254, 252, 232]; u = t / 0.5;
+    } else {
+      c1 = [254, 252, 232]; c2 = [254, 228, 235]; u = (t - 0.5) / 0.5;
+    }
+    const r = Math.round(c1[0] + (c2[0] - c1[0]) * u);
+    const g = Math.round(c1[1] + (c2[1] - c1[1]) * u);
+    const b = Math.round(c1[2] + (c2[2] - c1[2]) * u);
+    return { backgroundColor: `rgb(${r}, ${g}, ${b})`, color: '#334155' };
   };
 
   const sortedEmployees = useMemo(() => {
@@ -650,7 +709,7 @@ function RekapTab({ data, onSelectEmployee }) {
         idx + 1, `"${emp.nama}"`, emp.nik, `"${emp.bagian || ''}"`,
         ...days.map((d) => emp.days[d]?.code || '-'),
         emp.totals.OK, emp.totals.OFF, emp.totals.S, emp.totals.C, emp.totals.IDT,
-        emp.pelanggaran, emp.totals.LAM, emp.totals.LAP, emp.totals.M, emp.totals.DT,
+        emp.pelanggaran, emp.totals.LAM, emp.totals.LAP, emp.totals.TSM, emp.totals.M, emp.totals.DT,
         emp.totals.minutes, emp.avgMin,
       ];
       lines.push(row.join(','));
@@ -665,22 +724,30 @@ function RekapTab({ data, onSelectEmployee }) {
 
   return (
     <div>
-      <div className="rounded-lg border-2 border-slate-300 overflow-auto rekap-table-wrap" style={{ height: 'calc(100vh - 170px)', maxHeight: 'calc(100vh - 170px)' }}>
-        <table className="rekap-table border-collapse text-[10px]" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      <div className="rekap-table-wrap" style={{'--rekap-row-count': sortedEmployees.length}}>
+        <table className="rekap-table border-collapse" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+          <colgroup>
+            <col className="col-no" style={{width:20,minWidth:20,maxWidth:20}} />
+            <col className="col-nama" style={{width:200,minWidth:200,maxWidth:200}} />
+            <col className="col-nik" style={{width:100,minWidth:100,maxWidth:100}} />
+            <col className="col-bagian" style={{width:100,minWidth:100,maxWidth:100}} />
+            {days.map((d) => <col key={`col-day-${d}`} className="col-tanggal" style={{width:30,minWidth:30,maxWidth:30}} />)}
+            {['Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Tot.Pel', 'LAM', 'LAP', 'TSM', 'Mangkir', 'DT', 'Menit', 'AVG'].map((h) => <col key={`col-sum-${h}`} className="col-ringkasan" style={{width:30,minWidth:30,maxWidth:30}} />)}
+          </colgroup>
           <thead>
             <tr>
-              <th className="sticky top-0 left-0 z-40 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: NO_W, minWidth: NO_W, maxWidth: NO_W, padding: 0 }}>No</th>
-              <th className="sticky top-0 z-30 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NAMA_LEFT, width: NAMA_W, minWidth: NAMA_W, maxWidth: NAMA_W, padding: 0 }}>Nama</th>
-              <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, padding: 0 }}>NIK</th>
-              <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, padding: 0 }}>Bagian</th>
+              <th className="col-no sticky top-0 left-0 z-40 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: NO_W, minWidth: NO_W, maxWidth: NO_W, padding: 0 }}>No</th>
+              <th className="col-nama sticky top-0 z-30 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NAMA_LEFT, width: NAMA_W, minWidth: NAMA_W, maxWidth: NAMA_W, padding: 0 }}>Nama</th>
+              <th className="col-nik sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, padding: 0 }}>NIK</th>
+              <th className="col-bagian sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, padding: 0 }}>Bagian</th>
               {days.map((d) => (
-                <th key={d} className="sticky top-0 z-10 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: 20, minWidth: 20, maxWidth: 20, padding: 0 }}>
+                <th key={d} className="col-tanggal sticky top-0 z-10 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: 30, minWidth: 30, maxWidth: 30, padding: 0 }}>
                   <div>{String(d).padStart(2, '0')}</div>
-                  <div className="text-[9px] font-normal opacity-70">{weekdayFor(d)}</div>
+                  <div className="font-normal opacity-70">{weekdayFor(d)}</div>
                 </th>
               ))}
-              {['Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Tot.Pel', 'LAM', 'LAP', 'Mangkir', 'DT', 'Menit', 'AVG'].map((h) => (
-                <th key={h} className="sticky top-0 z-10 bg-blue-700 text-white text-center px-2 py-2 font-semibold border-slate-500" style={{ width: 25, minWidth: 25, maxWidth: 25, padding: 0 }}>{h}</th>
+              {['Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Tot.Pel', 'LAM', 'LAP', 'TSM', 'Mangkir', 'DT', 'Menit', 'AVG'].map((h) => (
+                <th key={h} className="col-ringkasan sticky top-0 z-10 bg-blue-700 text-white text-center px-2 py-2 font-semibold border-slate-500" style={{ width: 30, minWidth: 30, maxWidth: 30, padding: 0 }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -688,26 +755,26 @@ function RekapTab({ data, onSelectEmployee }) {
             {sortedEmployees.map((emp, idx) => (
               <tr key={emp.nik} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                 <td
-                  className="sticky left-0 z-20 px-1 py-1 border-slate-400 text-slate-500 text-center"
+                  className="col-no sticky left-0 z-20 px-1 py-1 border-slate-400 text-slate-500 text-center"
                   style={{ width: NO_W, minWidth: NO_W, maxWidth: NO_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
                 >
                   {idx + 1}
                 </td>
                 <td
-                  className="nama-cell sticky z-10 px-2 py-1 border-slate-400 font-medium text-slate-800 cursor-pointer hover:underline"
+                  className="col-nama nama-cell sticky z-10 px-2 py-1 border-slate-400 font-normal text-slate-800 cursor-pointer hover:underline"
                   style={{ left: NAMA_LEFT, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
                   onClick={() => onSelectEmployee(emp.nik)}
                 >
                   {emp.nama}
                 </td>
                 <td
-                  className="sticky z-10 px-0 py-1 border-slate-400 text-slate-500 text-center cursor-pointer hover:underline"
+                  className="col-nik nik-cell sticky z-10 px-0 py-1 border-slate-400 text-slate-500 text-center cursor-pointer hover:underline"
                   style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc', fontFamily: "'IBM Plex Mono', monospace" }}
                   onClick={() => onSelectEmployee(emp.nik)}
                 >
                   {emp.nik}
                 </td>
-                <td className="sticky z-10 px-0 py-1 border-slate-400 text-[10px] text-slate-600 text-center" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                <td className="col-bagian bagian-cell sticky z-10 px-0 py-1 border-slate-400 text-slate-600 text-center" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}>
                   {emp.bagian || '—'}
                 </td>
                 {days.map((d) => {
@@ -722,31 +789,32 @@ function RekapTab({ data, onSelectEmployee }) {
                     </td>
                   );
                 })}
-                <td className="text-center px-1 py-1 border-slate-400 font-medium sum-OK">{emp.totals.OK}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-OK">{emp.totals.OK}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-OFF">{emp.totals.OFF || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-S">{emp.totals.S || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-C">{emp.totals.C || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-IDT">{emp.totals.IDT || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 font-semibold sum-Pel" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-Pel" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAM">{emp.totals.LAM || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAP">{emp.totals.LAP || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-M" style={{ color: emp.totals.M > 0 ? '#be123c' : '#94a3b8' }}>{emp.totals.M || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-DT" style={{ color: emp.totals.DT > 0 ? '#b45309' : '#94a3b8' }}>{emp.totals.DT || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-Minutes" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.totals.minutes || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-AVG" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.avgMin || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-TSM">{emp.totals.TSM || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-M">{emp.totals.M || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-DT">{emp.totals.DT || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-Minutes">{emp.totals.minutes || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-AVG">{emp.avgMin || '-'}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-3">
+      <div className="rekap-legend flex flex-wrap gap-2 mt-3">
         {Object.entries(CODE_META).filter(([k]) => k !== '-' && k !== 'OK').map(([k, m]) => (
-          <div key={k} className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <div key={k} className="flex items-center gap-1.5 text-slate-500">
             <Badge code={k} /> {m.label}
           </div>
         ))}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+        <div className="flex items-center gap-1.5 text-slate-500">
           <span className="inline-block rounded border" style={{ width: 30, height: 18, borderColor: '#e2e8f0' }} /> Hadir (kosong)
         </div>
       </div>
@@ -776,7 +844,11 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
           masukSeharusnya: info?.masuk || '—',
           pulangSeharusnya: info?.pulang || '—',
           jenis: CODE_META[rec.code]?.label || rec.status || rec.code,
-          keterangan: rec.code === 'M' ? 'Mangkir' : rec.code === 'LAM' ? 'Lupa Absen Masuk' : 'Lupa Absen Pulang',
+          keterangan:
+            rec.code === 'M' ? 'Mangkir' :
+            rec.code === 'LAM' ? 'Lupa Absen Masuk' :
+            rec.code === 'LAP' ? 'Lupa Absen Pulang' :
+            rec.code === 'TSM' ? 'Salah TSM' : (rec.status || rec.code),
         });
       }
     });
@@ -1313,6 +1385,17 @@ function periodKeyOf(parsedData) {
   return `${parsedData.year}-${String(parsedData.monthNum).padStart(2, '0')}`;
 }
 
+function totPelClassName(value, maxValue) {
+  const v = Number(value) || 0;
+  const max = Number(maxValue) || 0;
+  if (max <= 0 || v <= 0) return 'totpel-cell totpel-low';
+  const ratio = v / max;
+  if (ratio <= 0.33) return 'totpel-cell totpel-low';
+  if (ratio <= 0.66) return 'totpel-cell totpel-mid';
+  return 'totpel-cell totpel-high';
+}
+
+
 function App() {
   const [data, setData] = useState(null);
   const [employeeDb, setEmployeeDb] = useState(EMPLOYEE_DB_SEED);
@@ -1626,3 +1709,74 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
+<style id="summary-neutral-font">.rekap-table td[class*="sum-"]{font-weight:400 !important;color:#111827 !important;background:#fff !important;}
+/* ===== FINAL CLEAN TABLE RULES ===== */
+.rekap-table {
+  table-layout: fixed !important;
+  width: max-content !important;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.rekap-table th,
+.rekap-table thead th {
+  text-align: center !important;
+  vertical-align: middle !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+.rekap-table td {
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  vertical-align: middle !important;
+}
+.rekap-table .col-no,
+.rekap-table .col-no th,
+.rekap-table .col-no td { width:20px !important; min-width:20px !important; max-width:20px !important; }
+.rekap-table .col-nama,
+.rekap-table .col-nama th,
+.rekap-table .col-nama td { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .col-nik,
+.rekap-table .col-nik th,
+.rekap-table .col-nik td { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .col-bagian,
+.rekap-table .col-bagian th,
+.rekap-table .col-bagian td { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .status-cell,
+.rekap-table .tanggal-cell {
+  width:30px !important;
+  min-width:30px !important;
+  max-width:30px !important;
+}
+.rekap-table td[class*="sum-"],
+.rekap-table th[class*="sum-"] {
+  width:30px !important;
+  min-width:30px !important;
+  max-width:30px !important;
+}
+
+/* TSM: dedicated soft red text + cell background */
+.rekap-table .status-tsm {
+  color:#991b1b !important;
+  background:#fee2e2 !important;
+  font-weight:400 !important;
+}
+
+/* Tot.Pel: soft green -> yellow -> pink, applied by data value */
+.rekap-table .totpel-cell {
+  color:#374151 !important;
+  font-weight:400 !important;
+  background:#f3f4f6 !important;
+  transition:none !important;
+}
+.rekap-table .totpel-cell.totpel-low { background:#dcfce7 !important; }
+.rekap-table .totpel-cell.totpel-mid { background:#fef3c7 !important; }
+.rekap-table .totpel-cell.totpel-high { background:#fce7f3 !important; }
+
+/* Legend/text immediately below the table centered */
+.rekap-legend {
+  text-align:center !important;
+  font-size:10px !important;
+}
+
+</style>
