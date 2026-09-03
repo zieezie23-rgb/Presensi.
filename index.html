@@ -24,12 +24,11 @@ body{margin:0;background:var(--idm-bg)!important;color:var(--idm-ink)!important;
 #root{min-height:100vh}
 button{transition:all .16s ease}
 .idm-shell{min-height:100vh;background:#fff}
-.idm-brandbar{min-height:56px;background:linear-gradient(180deg,#df1118 0%,#c90008 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-blue) 0 72%,var(--idm-yellow) 72% 100%)}
+.idm-brandbar{min-height:56px;background:linear-gradient(180deg,#0a6ac9 0%,#004a8f 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-red) 0 72%,var(--idm-yellow) 72% 100%)}
 .idm-logo{width:106px;height:42px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
 .idm-logo:before{content:"Indomaret";font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:15px;color:#005baa;background:#fff;border:2px solid #005baa;border-radius:50%;padding:3px 12px;line-height:1;white-space:nowrap}
-.idm-menu-btn{width:40px;height:40px;border:0!important;border-radius:7px;background:rgba(255,255,255,.12)!important;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none!important}
-.idm-menu-btn:hover{background:rgba(255,255,255,.22)!important}
+.idm-menu-btn{width:48px;height:48px;border:0!important;background:transparent!important;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none!important}
 .idm-brand-title{margin-left:12px;color:#fff;line-height:1.08}
 .idm-brand-title h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
 .idm-brand-title p{margin:2px 0 0;font-size:10px;font-weight:500}
@@ -199,6 +198,23 @@ const Trash2 = makeIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 
 const UserCog = makeIcon(<><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h3" /><circle cx="18" cy="18" r="3" /><path d="M18 14.5v1M18 20.5v1M14.5 18h1M20.5 18h1M15.5 15.5l.7.7M20.3 20.3l.7.7M15.5 20.5l.7-.7M20.3 15.7l.7-.7" /></>);
 const Lock = makeIcon(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>);
 const Menu = makeIcon(<><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>);
+function TriMenuIcon({ size = 22 }) {
+  const rows = [
+    { y: 5, color: '#d71920' },
+    { y: 12, color: '#005baa' },
+    { y: 19, color: '#ffd100' },
+  ];
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {rows.map((r) => (
+        <React.Fragment key={r.y}>
+          <line x1="3" y1={r.y} x2="21" y2={r.y} stroke="#ffffff" strokeWidth="5" strokeLinecap="round" />
+          <line x1="3" y1={r.y} x2="21" y2={r.y} stroke={r.color} strokeWidth="3.2" strokeLinecap="round" />
+        </React.Fragment>
+      ))}
+    </svg>
+  );
+}
 
 /* ---------------------------------------------------------------------- */
 /*  Constants & helpers                                                    */
@@ -538,9 +554,9 @@ function Dropzone({ onFile, busy, error }) {
             if (f) onFile(f);
           }}
           className="rounded-2xl border-2 border-dashed p-12 text-center transition-colors"
-          style={{ borderColor: dragOver ? '#0f172a' : '#cbd5e1', backgroundColor: dragOver ? '#f8fafc' : '#ffffff' }}
+          style={{ borderColor: dragOver ? '#005baa' : '#cbd5e1', backgroundColor: dragOver ? '#eaf3fc' : '#ffffff' }}
         >
-          <div className="mx-auto mb-4 w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
+          <div className="mx-auto mb-4 w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(180deg,#0a6ac9 0%,#004a8f 100%)' }}>
             {busy ? <RefreshCw className="animate-spin" size={22} color="#fff" /> : <Upload size={22} color="#fff" />}
           </div>
           <h2 className="text-lg font-semibold text-slate-900" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
@@ -559,8 +575,8 @@ function Dropzone({ onFile, busy, error }) {
           <button
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
-            style={{ backgroundColor: '#0f172a' }}
+            className="mt-6 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            style={{ backgroundColor: '#005baa' }}
           >
             <Upload size={15} /> Pilih file .xls
           </button>
@@ -849,8 +865,8 @@ function SudahDijelaskanTab({ data, onSelectEmployee }) {
       <div className="mb-2 text-xs text-slate-500">{rows.length} pelanggaran sudah dijelaskan</div>
       <div className="rounded-lg border border-slate-300 overflow-auto" style={{maxHeight:'70vh'}}>
         <table className="w-full text-[10px] border-collapse">
-          <thead><tr className="bg-emerald-700 text-white">
-            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} className={`sticky top-0 bg-emerald-700 px-1.5 py-1 border border-emerald-500 font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
+          <thead><tr style={{ backgroundColor: 'var(--idm-navy)' }} className="text-white">
+            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} style={{ backgroundColor: 'var(--idm-navy)', borderColor: '#0a5cc4' }} className={`sticky top-0 px-1.5 py-1 border font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
           </tr></thead>
           <tbody>
             {rows.map((r,i)=><tr key={`${r.nik}-${r.day}`} className={i%2===0?'bg-white':'bg-slate-50'}>
@@ -908,7 +924,7 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
                 key={emp.nik}
                 onClick={() => onSelectEmployee(emp.nik)}
                 className="w-full text-left px-3 py-2.5 border-b border-slate-50 flex items-center justify-between gap-2"
-                style={{ backgroundColor: active ? '#0f172a' : 'transparent' }}
+                style={{ backgroundColor: active ? '#005baa' : 'transparent' }}
               >
                 <div className="min-w-0">
                   <div className="text-[13px] font-medium truncate" style={{ color: active ? '#fff' : '#0f172a' }}>{emp.nama}</div>
@@ -1093,8 +1109,8 @@ function KaryawanTab({ employeeDb, onAdd, onDelete }) {
           />
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-white"
-            style={{ backgroundColor: '#0f172a' }}
+            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-white"
+            style={{ backgroundColor: '#005baa' }}
           >
             <Plus size={14} /> Tambah
           </button>
@@ -1191,9 +1207,9 @@ function SideMenu({ tab, onSelect, onClose }) {
                 onClick={() => { onSelect(t.id); onClose(); }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-semibold"
                 style={{
-                  color: active ? 'var(--idm-red)' : '#374151',
-                  backgroundColor: active ? '#fff1f1' : 'transparent',
-                  borderLeft: active ? '3px solid var(--idm-red)' : '3px solid transparent',
+                  color: active ? '#005baa' : '#374151',
+                  backgroundColor: active ? '#eaf3fc' : 'transparent',
+                  borderLeft: active ? '3px solid #005baa' : '3px solid transparent',
                 }}
               >
                 <Icon size={14} /> {t.label}
@@ -1248,7 +1264,7 @@ function AccessCodeModal({ onClose, onSuccess }) {
           </button>
         </div>
         <div className="px-5 pt-5 pb-4 flex flex-col items-center text-center">
-          <span className="inline-flex items-center justify-center rounded-full mb-2" style={{ width: 30, height: 30, backgroundColor: '#fff1f1', color: '#d71920' }}>
+          <span className="inline-flex items-center justify-center rounded-full mb-2" style={{ width: 30, height: 30, backgroundColor: '#eaf3fc', color: '#005baa' }}>
             <Lock size={15} />
           </span>
           <p className="text-xs text-slate-600 mb-3">Masukkan kode akses</p>
@@ -1505,7 +1521,7 @@ function App() {
       <style>{FONT_IMPORT}</style>
       <div className="idm-brandbar">
         <button onClick={() => setShowSideMenu(true)} aria-label="Menu" className="idm-menu-btn">
-          <Menu size={22} color="#fff" />
+          <TriMenuIcon size={34} />
         </button>
         <div className="idm-brand-title">
           <h1>REKAP PRESENSI</h1>
@@ -1537,7 +1553,7 @@ function App() {
                 </button>
                         <button onClick={() => setShowAccessModal(true)} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
                   className="inline-flex items-center justify-center rounded-md px-2.5 py-2.5 text-white"
-                  style={{ backgroundColor:'#d71920' }}>⚙</button>
+                  style={{ backgroundColor:'#06479f' }}>⚙</button>
               </>
             )}
           </div>
