@@ -81,6 +81,7 @@ button{transition:all .16s ease}
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: none;
+  padding: 0 8px !important;
 }
 .rekap-table .kode-text {
   display: inline;
@@ -588,10 +589,11 @@ function RekapTab({ data, onSelectEmployee }) {
     ctx.font = font;
     return Math.ceil(ctx.measureText(String(text || '')).width) + 2;
   };
+  const NO_W = Math.max(26, measureTextWidth(String(data.employees.length), '9px IBM Plex Sans') + 12);
   const NAMA_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nama, '9px IBM Plex Sans')));
   const NIK_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.nik, '9px IBM Plex Mono')));
   const BAGIAN_W = Math.max(40, ...data.employees.map(e => measureTextWidth(e.bagian || '—', '9px IBM Plex Sans')));
-  const NIK_LEFT = NAMA_W, BAGIAN_LEFT = NAMA_W + NIK_W;
+  const NAMA_LEFT = NO_W, NIK_LEFT = NO_W + NAMA_W, BAGIAN_LEFT = NO_W + NAMA_W + NIK_W;
 
   // Sort bertingkat: total pelanggaran(z-a) -> avg(z-a) -> hadir(a-z) -> off(z-a) -> sakit(z-a) -> cuti(z-a) -> nama(a-z)
   const pelanggaranMax = useMemo(() => Math.max(0, ...data.employees.map(e => Number(e.pelanggaran) || 0)), [data.employees]);
@@ -647,7 +649,8 @@ function RekapTab({ data, onSelectEmployee }) {
         <table className="rekap-table border-collapse text-[10px]" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
           <thead>
             <tr>
-              <th className="sticky top-0 left-0 z-30 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ width: NAMA_W, minWidth: NAMA_W, maxWidth: NAMA_W, padding: 0 }}>Nama</th>
+              <th className="sticky top-0 left-0 z-40 bg-blue-700 text-white text-center px-1 py-1 font-semibold border-slate-500" style={{ width: NO_W, minWidth: NO_W, maxWidth: NO_W, padding: 0 }}>No</th>
+              <th className="sticky top-0 z-30 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NAMA_LEFT, width: NAMA_W, minWidth: NAMA_W, maxWidth: NAMA_W, padding: 0 }}>Nama</th>
               <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: NIK_LEFT, width: NIK_W, minWidth: NIK_W, maxWidth: NIK_W, padding: 0 }}>NIK</th>
               <th className="sticky top-0 z-20 bg-blue-700 text-white text-left px-1 py-1 font-semibold border-slate-500" style={{ left: BAGIAN_LEFT, width: BAGIAN_W, minWidth: BAGIAN_W, maxWidth: BAGIAN_W, padding: 0 }}>Bagian</th>
               {days.map((d) => (
@@ -665,8 +668,14 @@ function RekapTab({ data, onSelectEmployee }) {
             {sortedEmployees.map((emp, idx) => (
               <tr key={emp.nik} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                 <td
-                  className="nama-cell sticky left-0 z-10 px-2 py-1 border-slate-400 font-medium text-slate-800 cursor-pointer hover:underline"
-                  style={{ backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
+                  className="sticky left-0 z-20 px-1 py-1 border-slate-400 text-slate-500 text-center"
+                  style={{ width: NO_W, minWidth: NO_W, maxWidth: NO_W, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
+                >
+                  {idx + 1}
+                </td>
+                <td
+                  className="nama-cell sticky z-10 px-2 py-1 border-slate-400 font-medium text-slate-800 cursor-pointer hover:underline"
+                  style={{ left: NAMA_LEFT, backgroundColor: idx % 2 === 0 ? '#fff' : '#f8fafc' }}
                   onClick={() => onSelectEmployee(emp.nik)}
                 >
                   {emp.nama}
@@ -1132,7 +1141,15 @@ const sheetsApi = {
 // Cache lokal (localStorage) — hanya sebagai fallback offline / kalau Apps
 // Script belum dikonfigurasi. Sumber kebenaran utama tetap Google Sheets.
 const DATABASE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1VqZTTI69xP9zSDN4OOLM2YYkgti86z252gwDRThYHUU/edit?gid=0#gid=0';
+// Ganti kode di bawah ini sesuai kode akses yang diinginkan.
+const DATABASE_ACCESS_CODE = '00000';
 async function openDatabaseSpreadsheet() {
+  const code = window.prompt('Masukkan kode akses untuk membuka database:');
+  if (code === null) return; // dibatalkan
+  if (code.trim() !== DATABASE_ACCESS_CODE) {
+    window.alert('Kode akses salah.');
+    return;
+  }
   try {
     const res = await sheetsApi.get('getSpreadsheetUrl');
     if (res && res.url) { window.open(res.url, '_blank', 'noopener,noreferrer'); return; }
@@ -1368,7 +1385,7 @@ function App() {
         <div className="idm-logo" aria-label="Indomaret"></div>
         <div className="idm-brand-title">
           <h1>REKAP PRESENSI</h1>
-          <p>Rekap Presensi Karyawan</p>
+          <p>{data ? (data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
         </div>
         {uploadSuccess && (
           <div className="upload-success"><CheckCircle2 size={14} /> Upload berhasil</div>
@@ -1422,7 +1439,7 @@ function App() {
       </div>
 
       <div className="idm-content">
-        {data && (
+        {false && data && (
           <div className="idm-period">
             <div><strong>{data.monthLabelId || 'Periode tidak diketahui'}</strong>{data.meta?.cabang ? `  ·  ${data.meta.cabang}` : ''}{data.meta?.divisi ? `  ·  ${data.meta.divisi}` : ''}</div>
             <div>{data.employees.length} karyawan</div>
