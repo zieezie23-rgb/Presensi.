@@ -130,9 +130,9 @@ button{transition:all .16s ease}
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
-.rekap-table .nama-cell { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .nama-cell { width:180px !important; min-width:180px !important; max-width:180px !important; }
 .rekap-table .col-no { width:20px !important; min-width:20px !important; max-width:20px !important; }
-.rekap-table .col-nama { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .col-nama { width:180px !important; min-width:180px !important; max-width:180px !important; }
 .rekap-table .col-nik { width:100px !important; min-width:100px !important; max-width:100px !important; }
 .rekap-table .col-bagian { width:100px !important; min-width:100px !important; max-width:100px !important; }
 .rekap-table .col-tanggal, .rekap-table .col-ringkasan { width:30px !important; min-width:30px !important; max-width:30px !important; }
@@ -164,7 +164,7 @@ button{transition:all .16s ease}
 .rekap-table .status-cell.status-OFF { background: #ffd9d9 !important; color: #ef1111 !important; }
 .rekap-table .status-cell.status-S { background: #ffedd5 !important; color: #c2410c !important; }
 .rekap-table .status-cell.status-C { background: #dcfce7 !important; color: #16a34a !important; }
-.rekap-table .status-cell.status-M { background: #ffb3b3 !important; color: #b91c1c !important; }
+
 .rekap-table .status-cell.status-LAM,
 .rekap-table .status-cell.status-LAP { background: #ffe4e6 !important; color: #dc2626 !important; }
 .rekap-table .status-cell.status-IDT,
@@ -663,7 +663,7 @@ function RekapTab({ data, onSelectEmployee }) {
     return Math.ceil(ctx.measureText(String(text || '')).width) + 2;
   };
   const NO_W = 20;
-  const NAMA_W = 200;
+  const NAMA_W = 180;
   const NIK_W = 100;
   const BAGIAN_W = 100;
   const NAMA_LEFT = NO_W, NIK_LEFT = NO_W + NAMA_W, BAGIAN_LEFT = NO_W + NAMA_W + NIK_W;
@@ -672,20 +672,21 @@ function RekapTab({ data, onSelectEmployee }) {
   const pelanggaranMax = useMemo(() => Math.max(0, ...data.employees.map(e => Number(e.pelanggaran) || 0)), [data.employees]);
   const pelanggaranColor = (value) => {
     const v = Number(value) || 0;
-    if (!pelanggaranMax || v <= 0) return { backgroundColor: '#f0fdf4', color: '#166534' };
+    if (!pelanggaranMax || v <= 0) return { '--totpel-bg': '#ecfdf5' };
     const t = Math.max(0, Math.min(1, v / pelanggaranMax));
     let c1, c2, u;
     if (t <= 0.5) {
-      c1 = [240, 253, 244]; c2 = [254, 252, 232]; u = t / 0.5;
+      c1 = [236, 253, 245]; // hijau muda
+      c2 = [254, 249, 195]; // kuning muda
+      u = t / 0.5;
     } else {
-      c1 = [254, 252, 232]; c2 = [254, 228, 235]; u = (t - 0.5) / 0.5;
+      c1 = [254, 249, 195]; // kuning muda
+      c2 = [254, 202, 202]; // merah muda
+      u = (t - 0.5) / 0.5;
     }
-    const r = Math.round(c1[0] + (c2[0] - c1[0]) * u);
-    const g = Math.round(c1[1] + (c2[1] - c1[1]) * u);
-    const b = Math.round(c1[2] + (c2[2] - c1[2]) * u);
-    return { backgroundColor: `rgb(${r}, ${g}, ${b})`, color: '#334155' };
+    const rgb = c1.map((c, i) => Math.round(c + (c2[i] - c) * u));
+    return { '--totpel-bg': `rgb(${rgb.join(', ')})` };
   };
-
   const sortedEmployees = useMemo(() => {
     const list = [...data.employees];
     list.sort((a, b) => (
@@ -728,7 +729,7 @@ function RekapTab({ data, onSelectEmployee }) {
         <table className="rekap-table border-collapse" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
           <colgroup>
             <col className="col-no" style={{width:20,minWidth:20,maxWidth:20}} />
-            <col className="col-nama" style={{width:200,minWidth:200,maxWidth:200}} />
+            <col className="col-nama" style={{width:180,minWidth:180,maxWidth:180}} />
             <col className="col-nik" style={{width:100,minWidth:100,maxWidth:100}} />
             <col className="col-bagian" style={{width:100,minWidth:100,maxWidth:100}} />
             {days.map((d) => <col key={`col-day-${d}`} className="col-tanggal" style={{width:30,minWidth:30,maxWidth:30}} />)}
@@ -794,7 +795,7 @@ function RekapTab({ data, onSelectEmployee }) {
                 <td className="text-center px-1 py-1 border-slate-400 sum-S">{emp.totals.S || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-C">{emp.totals.C || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-IDT">{emp.totals.IDT || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-Pel" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-Pel totpel-cell" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAM">{emp.totals.LAM || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAP">{emp.totals.LAP || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-TSM">{emp.totals.TSM || '-'}</td>
@@ -1385,15 +1386,7 @@ function periodKeyOf(parsedData) {
   return `${parsedData.year}-${String(parsedData.monthNum).padStart(2, '0')}`;
 }
 
-function totPelClassName(value, maxValue) {
-  const v = Number(value) || 0;
-  const max = Number(maxValue) || 0;
-  if (max <= 0 || v <= 0) return 'totpel-cell totpel-low';
-  const ratio = v / max;
-  if (ratio <= 0.33) return 'totpel-cell totpel-low';
-  if (ratio <= 0.66) return 'totpel-cell totpel-mid';
-  return 'totpel-cell totpel-high';
-}
+
 
 
 function App() {
@@ -1735,7 +1728,7 @@ root.render(<App />);
 .rekap-table .col-no td { width:20px !important; min-width:20px !important; max-width:20px !important; }
 .rekap-table .col-nama,
 .rekap-table .col-nama th,
-.rekap-table .col-nama td { width:200px !important; min-width:200px !important; max-width:200px !important; }
+.rekap-table .col-nama td { width:180px !important; min-width:180px !important; max-width:180px !important; }
 .rekap-table .col-nik,
 .rekap-table .col-nik th,
 .rekap-table .col-nik td { width:100px !important; min-width:100px !important; max-width:100px !important; }
@@ -1755,23 +1748,23 @@ root.render(<App />);
   max-width:30px !important;
 }
 
-/* TSM: dedicated soft red text + cell background */
-.rekap-table .status-tsm {
-  color:#991b1b !important;
-  background:#fee2e2 !important;
+/* Status colors apply ONLY to date/status cells. Summary columns stay neutral. */
+.rekap-table .status-cell.status-TSM {
+  background:#e9d5ff !important;
+  color:#581c87 !important;
   font-weight:400 !important;
 }
-
-/* Tot.Pel: soft green -> yellow -> pink, applied by data value */
-.rekap-table .totpel-cell {
-  color:#374151 !important;
-  font-weight:400 !important;
-  background:#f3f4f6 !important;
-  transition:none !important;
+.rekap-table .status-cell.status-TSM .kode-text {
+  color:#581c87 !important;
 }
-.rekap-table .totpel-cell.totpel-low { background:#dcfce7 !important; }
-.rekap-table .totpel-cell.totpel-mid { background:#fef3c7 !important; }
-.rekap-table .totpel-cell.totpel-high { background:#fce7f3 !important; }
+.rekap-table .status-cell.status-M {
+  background:#dc2626 !important;
+  color:#ffffff !important;
+  font-weight:400 !important;
+}
+.rekap-table .status-cell.status-M .kode-text {
+  color:#ffffff !important;
+}
 
 /* Legend/text immediately below the table centered */
 .rekap-legend {
@@ -1779,4 +1772,16 @@ root.render(<App />);
   font-size:10px !important;
 }
 
+
+/* Final: summary columns stay neutral, except Tot.Pel which uses a value gradient. */
+.rekap-table td[class*="sum-"] {
+  background:#fff !important;
+  color:#111827 !important;
+  font-weight:400 !important;
+}
+.rekap-table td.sum-Pel.totpel-cell {
+  background:var(--totpel-bg,#ecfdf5) !important;
+  color:#111827 !important;
+  font-weight:400 !important;
+}
 </style>
