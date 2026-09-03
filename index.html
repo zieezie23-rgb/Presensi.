@@ -416,12 +416,33 @@ const DEFAULT_SHIFT_TABLE = {
   '92100': { masuk: '10:00', pulang: '16:30', jumat: true },
 };
 
+// Normalisasi jam ke format yang dipakai database/rule presensi: h:mm (tanpa 0 di depan).
+// Input type=time memang mengembalikan HH:MM, jadi saat disimpan kita ubah kembali ke h:mm.
+function normalizeShiftTime(value) {
+  const m = String(value || '').trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return String(value || '').trim();
+  return `${parseInt(m[1], 10)}:${m[2]}`;
+}
+
+function normalizeShiftTable(table) {
+  const out = {};
+  Object.entries(table || {}).forEach(([k, v]) => {
+    if (!v || typeof v !== 'object') return;
+    out[k] = {
+      ...v,
+      masuk: normalizeShiftTime(v.masuk),
+      pulang: normalizeShiftTime(v.pulang),
+    };
+  });
+  return out;
+}
+
 const SHIFT_TABLE = (() => {
   try {
     const saved = JSON.parse(localStorage.getItem('lhpk-shift-table') || 'null');
-    if (saved && typeof saved === 'object') return { ...DEFAULT_SHIFT_TABLE, ...saved };
+    if (saved && typeof saved === 'object') return normalizeShiftTable({ ...DEFAULT_SHIFT_TABLE, ...saved });
   } catch (e) {}
-  return { ...DEFAULT_SHIFT_TABLE };
+  return normalizeShiftTable(DEFAULT_SHIFT_TABLE);
 })();
 
 function shiftInfoFor(shiftCode) {
@@ -1269,7 +1290,8 @@ const NAV_TABS = [
 ];
 
 function PolaShiftTab() {
-  const [rows, setRows] = useState(() => Object.entries(SHIFT_TABLE).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
+  const scrollRef = useRef(null);
+  const [rows, setRows] = useState(() => Object.entries(normalizeShiftTable(SHIFT_TABLE)).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
   const [showForm, setShowForm] = useState(false);
   const [kode, setKode] = useState('');
   const [masuk, setMasuk] = useState('');
@@ -1277,8 +1299,16 @@ function PolaShiftTab() {
   const [jumat, setJumat] = useState(false);
   const [error, setError] = useState('');
 
-  const refresh = () => setRows(Object.entries(SHIFT_TABLE).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
-  const saveLocal = () => localStorage.setItem('lhpk-shift-table', JSON.stringify(SHIFT_TABLE));
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, []);
+
+  const refresh = () => {
+    Object.assign(SHIFT_TABLE, normalizeShiftTable(SHIFT_TABLE));
+    setRows(Object.entries(SHIFT_TABLE).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
+    requestAnimationFrame(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; });
+  };
+  const saveLocal = () => localStorage.setItem('lhpk-shift-table', JSON.stringify(normalizeShiftTable(SHIFT_TABLE)));
 
   const submit = (e) => {
     e.preventDefault();
@@ -1287,7 +1317,7 @@ function PolaShiftTab() {
     if (!/^\d{1,6}$/.test(k)) { setError('Kode shift hanya boleh berupa angka.'); return; }
     const validTime = (v) => /^([01]?\d|2[0-3]):[0-5]\d$/.test(v);
     if (!validTime(masuk) || !validTime(pulang)) { setError('Format jam harus HH:MM.'); return; }
-    SHIFT_TABLE[k] = { masuk, pulang, ...(jumat ? { jumat: true } : {}) };
+    SHIFT_TABLE[k] = { masuk: normalizeShiftTime(masuk), pulang: normalizeShiftTime(pulang), ...(jumat ? { jumat: true } : {}) };
     saveLocal();
     refresh();
     setKode(''); setMasuk(''); setPulang(''); setJumat(false); setError(''); setShowForm(false);
@@ -1319,8 +1349,8 @@ function PolaShiftTab() {
           <p className="text-xs font-semibold text-slate-600 mb-2.5">Tambah Pola Shift Baru</p>
           <div className="flex flex-wrap items-end gap-2">
             <label className="text-[11px] text-slate-500">Kode Shift<input value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} placeholder="Contoh: 325" className="block w-28 mt-1 text-xs px-2.5 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
-            <label className="text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(e.target.value)} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
-            <label className="text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(e.target.value)} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
+            <label className="text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
+            <label className="text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
             <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-1.5"><input type="checkbox" checked={jumat} onChange={e=>setJumat(e.target.checked)} /> Khusus Jumat</label>
             <button type="submit" className="rounded-md px-3 py-1.5 text-xs font-semibold text-white" style={{backgroundColor:'#16a34a'}}>Simpan</button>
           </div>
@@ -1328,8 +1358,8 @@ function PolaShiftTab() {
         </form>
       )}
 
-      <div className="rounded-lg border border-slate-200 overflow-auto bg-white" style={{maxHeight:'60vh'}}>
-        <table className="w-full text-[11px] border-collapse">
+      <div ref={scrollRef} className="pola-shift-scroll rounded-lg border border-slate-200 bg-white">
+        <table className="pola-shift-table w-full text-[11px] border-collapse">
           <thead><tr className="bg-blue-700 text-white">
             <th className="px-2 py-1.5 text-center">No</th><th className="px-2 py-1.5 text-center">Kode Shift</th><th className="px-2 py-1.5 text-center">Masuk</th><th className="px-2 py-1.5 text-center">Pulang</th><th className="px-2 py-1.5 text-center">Keterangan</th><th className="px-2 py-1.5 text-center">Aksi</th>
           </tr></thead>
@@ -1337,8 +1367,8 @@ function PolaShiftTab() {
             {rows.map(([k,v],i)=><tr key={k} className={i%2===0?'bg-white':'bg-slate-50'}>
               <td className="px-2 py-1 border-t border-slate-100 text-center text-slate-400">{i+1}</td>
               <td className="px-2 py-1 border-t border-slate-100 text-center font-semibold text-slate-700">{k}</td>
-              <td className="px-2 py-1 border-t border-slate-100 text-center">{v.masuk}</td>
-              <td className="px-2 py-1 border-t border-slate-100 text-center">{v.pulang}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center">{normalizeShiftTime(v.masuk)}</td>
+              <td className="px-2 py-1 border-t border-slate-100 text-center">{normalizeShiftTime(v.pulang)}</td>
               <td className="px-2 py-1 border-t border-slate-100 text-center text-slate-500">{v.jumat ? 'Khusus Jumat' : 'Reguler'}</td>
               <td className="px-2 py-1 border-t border-slate-100 text-center"><button onClick={()=>remove(k)} className="inline-flex items-center justify-center rounded-md p-1 text-rose-500 hover:bg-rose-50" title="Hapus"><Trash2 size={13}/></button></td>
             </tr>)}
