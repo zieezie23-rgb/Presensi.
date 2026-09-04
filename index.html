@@ -14,6 +14,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/3.10.1/Recharts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   body { margin: 0; }
 
@@ -297,14 +299,6 @@ function TriMenuIcon({ size = 22 }) {
           <line x1="3" y1={r.y} x2="21" y2={r.y} stroke={r.color} strokeWidth="3.2" strokeLinecap="round" />
         </React.Fragment>
       ))}
-    </svg>
-  );
-}
-function WhatsAppIcon({ size = 15, color = '#25D366' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-      <path d="M12.01 2C6.487 2 2 6.486 2 12.01c0 1.986.577 3.836 1.573 5.397L2 22l4.712-1.535A9.94 9.94 0 0 0 12.01 22C17.533 22 22 17.514 22 11.99 22 6.466 17.533 2 12.01 2zm0 18.13a8.11 8.11 0 0 1-4.132-1.13l-.296-.176-3.09.977.98-3.075-.19-.316A8.09 8.09 0 0 1 3.9 12.01c0-4.472 3.638-8.11 8.11-8.11 4.472 0 8.11 3.638 8.11 8.11 0 4.472-3.638 8.12-8.11 8.12z" />
     </svg>
   );
 }
@@ -1384,9 +1378,36 @@ function PolaShiftTab() {
   const [pulang, setPulang] = useState('');
   const [jumat, setJumat] = useState(false);
   const [error, setError] = useState('');
+  const [savingCloud, setSavingCloud] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, []);
+
+  useEffect(() => {
+    if (!sheetsApi.configured()) return;
+    (async () => {
+      try {
+        const res = await sheetsApi.get('getShiftDb');
+        if (Array.isArray(res.shifts) && res.shifts.length > 0) {
+          Object.keys(SHIFT_TABLE).forEach(k => delete SHIFT_TABLE[k]);
+          res.shifts.forEach(row => {
+            if (!row || !row.kode) return;
+            SHIFT_TABLE[String(row.kode)] = {
+              masuk: normalizeShiftTime(row.masuk),
+              pulang: normalizeShiftTime(row.pulang),
+              ...(row.jumat ? { jumat: true } : {})
+            };
+          });
+          saveLocal();
+          refresh();
+        } else if (Array.isArray(res.shifts) && res.shifts.length === 0) {
+          await sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) });
+        }
+      } catch (err) {
+        console.warn('Gagal sinkron pola shift:', err);
+      }
+    })();
   }, []);
 
   const refresh = () => {
@@ -1406,6 +1427,10 @@ function PolaShiftTab() {
     SHIFT_TABLE[k] = { masuk: normalizeShiftTime(masuk), pulang: normalizeShiftTime(pulang), ...(jumat ? { jumat: true } : {}) };
     saveLocal();
     refresh();
+    setSavingCloud(true);
+    sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
+      .catch(err => setError('Tersimpan di perangkat, tetapi gagal menyimpan ke database.'))
+      .finally(() => setSavingCloud(false));
     setKode(''); setMasuk(''); setPulang(''); setJumat(false); setError(''); setShowForm(false);
   };
 
@@ -1414,6 +1439,10 @@ function PolaShiftTab() {
     delete SHIFT_TABLE[k];
     saveLocal();
     refresh();
+    setSavingCloud(true);
+    sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
+      .catch(() => setError('Perubahan tersimpan di perangkat, tetapi gagal menyimpan ke database.'))
+      .finally(() => setSavingCloud(false));
   };
 
   return (
@@ -1438,7 +1467,7 @@ function PolaShiftTab() {
             <label className="text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
             <label className="text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
             <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-1.5"><input type="checkbox" checked={jumat} onChange={e=>setJumat(e.target.checked)} /> Khusus Jumat</label>
-            <button type="submit" className="rounded-md px-3 py-1.5 text-xs font-semibold text-white" style={{backgroundColor:'#16a34a'}}>Simpan</button>
+            <button type="submit" disabled={savingCloud} className="rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60" style={{backgroundColor:'#16a34a'}}>{savingCloud ? 'Menyimpan...' : 'Simpan'}</button>
           </div>
           {error && <p className="text-[11px] mt-2 text-rose-600">{error}</p>}
         </form>
@@ -1673,6 +1702,7 @@ function App() {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -1735,160 +1765,184 @@ function App() {
     return { ...data, employees: kept, totalParsed: data.employees.length, excludedCount: data.employees.length - kept.length };
   }, [data, employeeDbMap]);
 
-  const shareRekapToWhatsApp = useCallback(async () => {
+  const getExportRows = useCallback(() => {
+    if (!filteredData) return { headers: [], rows: [] };
+    const days = Array.from({ length: filteredData.monthLength }, (_, i) => i + 1);
+    const headers = [
+      'No', 'Nama', 'NIK', 'Bagian', ...days.map(String),
+      'Hadir', 'Off', 'Sakit', 'Cuti', 'IDT', 'Total Pelanggaran',
+      'LAM', 'LAP', 'TSM', 'Mangkir', 'DT', 'Menit', 'AVG'
+    ];
+    const rows = filteredData.employees.slice().sort((a, b) => (
+      (b.pelanggaran - a.pelanggaran)
+      || (b.avgMin - a.avgMin)
+      || (a.totals.OK - b.totals.OK)
+      || (b.totals.OFF - a.totals.OFF)
+      || (b.totals.S - a.totals.S)
+      || (b.totals.C - a.totals.C)
+      || a.nama.localeCompare(b.nama, 'id')
+    )).map((emp, idx) => [
+      idx + 1, emp.nama, emp.nik, emp.bagian || '',
+      ...days.map((d) => emp.days[d]?.code || '-'),
+      emp.totals.OK || 0, emp.totals.OFF || 0, emp.totals.S || 0, emp.totals.C || 0,
+      emp.totals.IDT || 0, emp.pelanggaran || 0, emp.totals.LAM || 0, emp.totals.LAP || 0,
+      emp.totals.TSM || 0, emp.totals.M || 0, emp.totals.DT || 0, emp.totals.minutes || 0, emp.avgMin || 0
+    ]);
+    return { headers, rows };
+  }, [filteredData]);
+
+  const exportExcel = useCallback(() => {
+    if (!filteredData) return;
+    const { headers, rows } = getExportRows();
+    const ws = XLSX.utils.aoa_to_sheet([
+      [`REKAP PRESENSI - ${filteredData.monthLabelId || ''}`],
+      [],
+      headers,
+      ...rows
+    ]);
+    ws['!freeze'] = { xSplit: 4, ySplit: 3 };
+    ws['!autofilter'] = { ref: `A3:${XLSX.utils.encode_col(headers.length - 1)}${rows.length + 3}` };
+    ws['!cols'] = headers.map((h, i) => {
+      if (i === 1) return { wch: 28 };
+      if (i === 2) return { wch: 14 };
+      if (i === 3) return { wch: 18 };
+      return { wch: Math.max(5, Math.min(18, String(h).length + 2)) };
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Rekap Presensi');
+    XLSX.writeFile(wb, `rekap-presensi-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.xlsx`);
+    setShowExportMenu(false);
+  }, [filteredData, getExportRows]);
+
+  const exportPdf = useCallback(() => {
+    if (!filteredData) return;
+    const { headers, rows } = getExportRows();
+    const jsPDF = window.jspdf?.jsPDF;
+    if (!jsPDF) {
+      setSyncError('Modul PDF belum siap. Silakan coba lagi.');
+      return;
+    }
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(`REKAP PRESENSI - ${filteredData.monthLabelId || ''}`, 10, 10);
+    doc.autoTable({
+      head: [headers],
+      body: rows,
+      startY: 15,
+      theme: 'grid',
+      styles: { font: 'helvetica', fontSize: 5.5, cellPadding: 0.8, overflow: 'hidden', valign: 'middle' },
+      headStyles: { fillColor: [0, 91, 170], textColor: 255, fontStyle: 'bold', fontSize: 5.5, halign: 'center' },
+      columnStyles: {
+        0: { cellWidth: 8, halign: 'center' },
+        1: { cellWidth: 40, halign: 'left' },
+        2: { cellWidth: 24, halign: 'center' },
+        3: { cellWidth: 25, halign: 'left' }
+      },
+      margin: { left: 7, right: 7, top: 15, bottom: 7 }
+    });
+    doc.save(`rekap-presensi-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.pdf`);
+    setShowExportMenu(false);
+  }, [filteredData, getExportRows]);
+
+  const exportJpeg = useCallback(async () => {
     if (!filteredData) return;
     const violationRows = getUnexplainedViolationRows(filteredData);
     if (violationRows.length === 0) {
-      setSyncError('Tidak ada pelanggaran yang belum dijelaskan untuk dibagikan.');
+      setSyncError('Tidak ada pelanggaran yang belum dijelaskan untuk diekspor.');
       return;
     }
-
-    const periodLabel = (filteredData.monthLabelId || 'Periode tidak diketahui').trim();
-    const whatsappText = `*Presensi ADM DC Bogor 1 s/d ${periodLabel}*
-
-https://zieezie23-rgb.github.io/Presensi./
-
-Jika ada penjelasan atas pelanggaran yg terekap, Mohon kerja samanya agar dapat input pada form penjelasan
-Untuk Cuti atau Sakit tidak perlu input cukup input portal HRD
-
-Terimakasih`;
-
-    // Buka WhatsApp SEBELUM proses async agar popup tidak diblokir browser.
-    // Teks akan langsung dipasang di kotak pesan WhatsApp Web.
-    let waWindow = null;
+    setBusy(true);
     try {
-      waWindow = window.open(
-        'https://web.whatsapp.com/send?text=' + encodeURIComponent(whatsappText),
-        '_blank'
-      );
-    } catch (e) {}
-
-    const cols = [
-      ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
-      ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'], ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
-      ['Tanggal', 'left'], ['Jenis', 'center'], ['Keterangan', 'left'],
-    ];
-
-    const wrap = document.createElement('div');
-    wrap.style.position = 'fixed';
-    wrap.style.left = '-99999px';
-    wrap.style.top = '0';
-    wrap.style.background = '#ffffff';
-    wrap.style.padding = '18px';
-    wrap.style.width = 'max-content';
-    wrap.style.fontFamily = "'IBM Plex Sans', Arial, sans-serif";
-
-    const title = document.createElement('div');
-    title.textContent = `Rincian Pelanggaran Belum Dijelaskan — ${periodLabel}`.trim();
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#111827;margin-bottom:10px;';
-    wrap.appendChild(title);
-
-    const table = document.createElement('table');
-    table.style.cssText = 'border-collapse:collapse;font-size:11px;color:#111827;';
-
-    const thead = document.createElement('thead');
-    const headTr = document.createElement('tr');
-    cols.forEach(([label, align]) => {
-      const th = document.createElement('th');
-      th.textContent = label;
-      th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:5px 8px;text-align:${align};white-space:nowrap;font-weight:600;`;
-      headTr.appendChild(th);
-    });
-    thead.appendChild(headTr);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    violationRows.forEach((r, idx) => {
-      const tr = document.createElement('tr');
-      tr.style.background = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-      const cells = [
-        [String(idx + 1), 'center'], [r.nik, 'center'], [r.nama, 'left'], [r.shift || '—', 'center'],
-        [r.masukSeharusnya, 'center'], [r.pulangSeharusnya, 'center'],
-        [r.masuk && r.masuk !== '00:00' ? r.masuk : '—', 'center'],
-        [r.pulang && r.pulang !== '00:00' ? r.pulang : '—', 'center'],
-        [r.tanggalLabel, 'left'], [r.jenis, 'center'], [r.keterangan, 'left'],
+      // JPEG khusus tabel "Rincian Pelanggaran Belum Dijelaskan" saja.
+      // Kolom JENIS sengaja tidak ikut diekspor.
+      const cols = [
+        ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
+        ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'],
+        ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
+        ['Tanggal', 'left'], ['Keterangan', 'left']
       ];
-      cells.forEach(([val, align]) => {
-        const td = document.createElement('td');
-        td.textContent = val;
-        td.style.cssText = `border:1px solid #e2e8f0;padding:4px 8px;text-align:${align};white-space:nowrap;`;
-        tr.appendChild(td);
+
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:fixed;left:-99999px;top:0;background:#fff;padding:0;margin:0;width:max-content;font-family:Arial,sans-serif;';
+
+      const table = document.createElement('table');
+      table.style.cssText = 'border-collapse:collapse;border-spacing:0;font-size:11px;color:#111827;background:#fff;margin:0;padding:0;table-layout:auto;';
+
+      const thead = document.createElement('thead');
+      const headTr = document.createElement('tr');
+      cols.forEach(([label, align]) => {
+        const th = document.createElement('th');
+        th.textContent = label;
+        // Gunakan line-height setara tinggi sel. Ini lebih stabil di html2canvas
+        // dibanding flex untuk posisi teks vertikal.
+        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;font-weight:600;height:30px;line-height:30px;box-sizing:border-box;`;
+        headTr.appendChild(th);
       });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    wrap.appendChild(table);
-    document.body.appendChild(wrap);
+      thead.appendChild(headTr);
+      table.appendChild(thead);
 
-    let file;
-    try {
-      const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-      const fileName = `pelanggaran-belum-dijelaskan-${periodLabel.replace(/\s+/g, '-').toLowerCase()}.jpg`;
-      file = new File([blob], fileName, { type: 'image/jpeg' });
+      const tbody = document.createElement('tbody');
+      violationRows.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        const cells = [
+          [String(idx + 1), 'center'],
+          [r.nik, 'center'],
+          [r.nama, 'left'],
+          [r.shift || '—', 'center'],
+          [r.masukSeharusnya || '—', 'center'],
+          [r.pulangSeharusnya || '—', 'center'],
+          [r.masuk && r.masuk !== '00:00' ? r.masuk : '—', 'center'],
+          [r.pulang && r.pulang !== '00:00' ? r.pulang : '—', 'center'],
+          [r.tanggalLabel, 'left'],
+          [r.keterangan, 'left']
+        ];
+        cells.forEach(([val, align]) => {
+          const td = document.createElement('td');
+          td.textContent = val == null ? '' : String(val);
+          td.style.cssText = `border:1px solid #cbd5e1;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;background:#fff;height:28px;line-height:28px;box-sizing:border-box;`;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      document.body.appendChild(wrap);
+
+      try {
+        const canvas = await html2canvas(wrap, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          width: wrap.scrollWidth,
+          height: wrap.scrollHeight,
+          windowWidth: Math.max(document.documentElement.clientWidth, wrap.scrollWidth),
+          windowHeight: Math.max(document.documentElement.clientHeight, wrap.scrollHeight),
+          scrollX: 0,
+          scrollY: 0
+        });
+        const a = document.createElement('a');
+        a.download = `pelanggaran-belum-dijelaskan-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.jpg`;
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } finally {
+        document.body.removeChild(wrap);
+      }
+    } catch (e) {
+      console.error('exportJpeg:', e);
+      setSyncError('Gagal membuat file JPEG rincian pelanggaran.');
     } finally {
-      document.body.removeChild(wrap);
+      setBusy(false);
+      setShowExportMenu(false);
     }
-    if (!file) return;
-
-    // HP/tablet yang mendukung Web Share: gambar + teks dikirim melalui menu Share.
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `Presensi ADM DC Bogor 1 s/d ${periodLabel}`,
-          text: whatsappText,
-        });
-        return;
-      } catch (err) {
-        if (err && err.name === 'AbortError') return;
-      }
-    }
-
-    // DESKTOP: WhatsApp Web tidak mengizinkan browser menempelkan file
-    // langsung ke chat. Solusi yang stabil adalah:
-    // 1. teks sudah diprefill lewat URL WhatsApp Web;
-    // 2. gambar JPEG disalin ke clipboard;
-    // 3. pengguna tinggal klik chat lalu Ctrl+V.
-    let imageCopied = false;
-    try {
-      if (navigator.clipboard && window.ClipboardItem && window.isSecureContext) {
-        const item = new ClipboardItem({
-          'image/jpeg': file,
-        });
-        await navigator.clipboard.write([item]);
-        imageCopied = true;
-      }
-    } catch (err) {
-      imageCopied = false;
-    }
-
-    // Jika popup tadi diblokir, coba buka lagi setelah proses selesai.
-    if (!waWindow || waWindow.closed) {
-      try {
-        waWindow = window.open(
-          'https://web.whatsapp.com/send?text=' + encodeURIComponent(whatsappText),
-          '_blank'
-        );
-      } catch (e) {}
-    }
-
-    if (imageCopied) {
-      setSyncError('WhatsApp Web sudah dibuka dengan pesan siap. Pilih chat lalu tekan Ctrl+V untuk menempelkan gambar JPEG.');
-      return;
-    }
-
-    // Fallback jika clipboard gambar tidak diizinkan browser.
-    const url = URL.createObjectURL(file);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setSyncError('Pesan WhatsApp sudah disiapkan. Gambar JPEG sudah diunduh karena browser tidak mengizinkan copy gambar. Lampirkan file tersebut di WhatsApp.');
   }, [filteredData]);
+
+  const handleExport = useCallback((type) => {
+    if (type === 'pdf') exportPdf();
+    else if (type === 'excel') exportExcel();
+    else if (type === 'jpeg') exportJpeg();
+  }, [exportPdf, exportExcel, exportJpeg]);
 
   const persistEmployeeDb = useCallback((next) => {
     localCache.set('lhpk:employee-db', JSON.stringify(next));
@@ -2051,11 +2105,24 @@ Terimakasih`;
                       style={{ backgroundColor:'#ffd100',color:'#fff' }}>
                       <RefreshCw size={15}/> REFRESH
                     </button>
-                    <button onClick={shareRekapToWhatsApp}
-                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                      style={{ backgroundColor:'#25D366',color:'#fff' }}>
-                      <WhatsAppIcon size={15} color="#fff"/> WHATSAPP
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowExportMenu((v) => !v)}
+                        disabled={busy}
+                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                        style={{ backgroundColor:'#005baa',color:'#fff' }}
+                        title="Export rekap"
+                      >
+                        <Download size={15}/> EXPORT
+                      </button>
+                      {showExportMenu && (
+                        <div className="absolute right-0 mt-1 z-50 rounded-md border border-slate-200 bg-white shadow-lg overflow-hidden" style={{ minWidth: 145 }}>
+                          <button onClick={() => handleExport('pdf')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">PDF</button>
+                          <button onClick={() => handleExport('excel')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Excel</button>
+                          <button onClick={() => handleExport('jpeg')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">JPEG</button>
+                        </div>
+                      )}
+                    </div>
                     <button onClick={() => setShowAdminMenu(true)} title="Menu admin" aria-label="Menu admin"
                       className="inline-flex items-center justify-center">
                       <Settings size={26} color="#fff" />
