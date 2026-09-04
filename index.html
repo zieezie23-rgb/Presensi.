@@ -1743,6 +1743,16 @@ function App() {
       return;
     }
 
+    const periodLabel = (filteredData.monthLabelId || 'Periode tidak diketahui').trim();
+    const whatsappText = `*Presensi ADM DC Bogor 1 s/d ${periodLabel}*
+
+https://zieezie23-rgb.github.io/Presensi./
+
+Jika ada penjelasan atas pelanggaran yg terekap, Mohon kerja samanya agar dapat input pada form penjelasan
+Untuk Cuti atau Sakit tidak perlu input cukup input portal HRD
+
+Terimakasih`;
+
     const cols = [
       ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
       ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'], ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
@@ -1759,7 +1769,7 @@ function App() {
     wrap.style.fontFamily = "'IBM Plex Sans', Arial, sans-serif";
 
     const title = document.createElement('div');
-    title.textContent = `Rincian Pelanggaran Belum Dijelaskan — ${filteredData.monthLabelId || ''}`.trim();
+    title.textContent = `Rincian Pelanggaran Belum Dijelaskan — ${periodLabel}`.trim();
     title.style.cssText = 'font-size:14px;font-weight:700;color:#111827;margin-bottom:10px;';
     wrap.appendChild(title);
 
@@ -1782,17 +1792,11 @@ function App() {
       const tr = document.createElement('tr');
       tr.style.background = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
       const cells = [
-        [String(idx + 1), 'center'],
-        [r.nik, 'center'],
-        [r.nama, 'left'],
-        [r.shift || '—', 'center'],
-        [r.masukSeharusnya, 'center'],
-        [r.pulangSeharusnya, 'center'],
+        [String(idx + 1), 'center'], [r.nik, 'center'], [r.nama, 'left'], [r.shift || '—', 'center'],
+        [r.masukSeharusnya, 'center'], [r.pulangSeharusnya, 'center'],
         [r.masuk && r.masuk !== '00:00' ? r.masuk : '—', 'center'],
         [r.pulang && r.pulang !== '00:00' ? r.pulang : '—', 'center'],
-        [r.tanggalLabel, 'left'],
-        [r.jenis, 'center'],
-        [r.keterangan, 'left'],
+        [r.tanggalLabel, 'left'], [r.jenis, 'center'], [r.keterangan, 'left'],
       ];
       cells.forEach(([val, align]) => {
         const td = document.createElement('td');
@@ -1810,19 +1814,20 @@ function App() {
     try {
       const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-      const fileName = `pelanggaran-belum-dijelaskan-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.jpg`;
+      const fileName = `pelanggaran-belum-dijelaskan-${periodLabel.replace(/\s+/g, '-').toLowerCase()}.jpg`;
       file = new File([blob], fileName, { type: 'image/jpeg' });
     } finally {
       document.body.removeChild(wrap);
     }
     if (!file) return;
 
+    // Perangkat yang mendukung Web Share: kirim gambar + teks sekaligus.
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
-          title: 'Rincian Pelanggaran Belum Dijelaskan',
-          text: `Rincian Pelanggaran Belum Dijelaskan — ${filteredData.monthLabelId || ''}`.trim(),
+          title: `Presensi ADM DC Bogor 1 s/d ${periodLabel}`,
+          text: whatsappText,
         });
         return;
       } catch (err) {
@@ -1830,15 +1835,40 @@ function App() {
       }
     }
 
-    // Fallback untuk browser yang tidak mendukung Web Share API dengan file (umumnya desktop):
-    // unduh JPEG-nya lalu buka WhatsApp Web supaya bisa dilampirkan manual.
+    // Desktop: salin JPEG + teks ke clipboard dalam satu ClipboardItem.
+    // WhatsApp Web dapat mengambil gambar saat Ctrl+V; teks juga tersedia
+    // sebagai format text/plain pada clipboard untuk browser yang mendukungnya.
+    let clipboardCopied = false;
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        const imageBlob = await file.arrayBuffer().then((b) => new Blob([b], { type: 'image/jpeg' }));
+        const item = new ClipboardItem({
+          'image/jpeg': imageBlob,
+          'text/plain': new Blob([whatsappText], { type: 'text/plain' }),
+        });
+        await navigator.clipboard.write([item]);
+        clipboardCopied = true;
+      }
+    } catch (err) {
+      clipboardCopied = false;
+    }
+
+    window.open('https://web.whatsapp.com/', '_blank');
+
+    if (clipboardCopied) {
+      setSyncError('Gambar + pesan sudah disalin. Di WhatsApp Web pilih chat lalu tekan Ctrl+V. Jika yang ditempel hanya gambar, tempel teks setelahnya dengan Ctrl+V.');
+      return;
+    }
+
+    // Fallback terakhir jika clipboard gambar tidak diizinkan browser.
     const url = URL.createObjectURL(file);
     const a = document.createElement('a');
-    a.href = url; a.download = file.name;
+    a.href = url;
+    a.download = file.name;
     a.click();
     URL.revokeObjectURL(url);
-    window.open('https://web.whatsapp.com/', '_blank');
-    setSyncError('Berbagi langsung tidak didukung di browser ini. Gambar JPEG sudah diunduh - lampirkan manual di WhatsApp Web yang baru dibuka.');
+    try { await navigator.clipboard.writeText(whatsappText); } catch (e) {}
+    setSyncError('Gambar JPEG sudah diunduh dan pesan teks sudah disalin. Buka WhatsApp Web, pilih chat, tempel teks, lalu lampirkan gambar.');
   }, [filteredData]);
 
   const persistEmployeeDb = useCallback((next) => {
