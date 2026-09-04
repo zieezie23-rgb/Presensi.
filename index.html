@@ -16,65 +16,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<style>
-  body { margin: 0; }
-
-/* Rekap Presensi: hilangkan kotak/container luar.
-   Border tetap hanya pada tabel dan sel tabel. */
-.rekap-card,
-.rekap-container,
-.rekap-wrapper,
-.rekap-panel {
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-.rekap-card > .rekap-table,
-.rekap-container > .rekap-table,
-.rekap-wrapper > .rekap-table,
-.rekap-panel > .rekap-table {
-  border-collapse: collapse;
-}
-
-/* Rekap Presensi: font tabel 10px dan data reguler */
-.rekap-table,
-.rekap-table th,
-.rekap-table td,
-.rekap-table thead,
-.rekap-table tbody,
-.rekap-table tr,
-.rekap-table .kode-text,
-.rekap-table .status-cell,
-.rekap-table td[class*="sum-"] {
-  font-size: 10px !important;
-}
-.rekap-table td {
-  font-weight: 400 !important;
-}
-
-<style>
-/* Posisi vertikal tabel rincian pelanggaran */
-.pelanggaran-table th,
-.pelanggaran-table td {
-  vertical-align: middle !important;
-  line-height: 18px !important;
-  box-sizing: border-box;
-}
-.pelanggaran-table tbody td {
-  height: 28px;
-}
-.pelanggaran-table thead th {
-  height: 34px;
-  line-height: 16px !important;
-}
-.pelanggaran-table td input {
-  line-height: 16px !important;
-  vertical-align: middle;
-}
-</style>
-</style>
-
 <style id="indomaret-premium-theme">
 :root{--idm-red:#d71920;--idm-blue:#005baa;--idm-yellow:#ffd100;--idm-navy:#06479f;--idm-ink:#1f2937;--idm-bg:#f4f6f8;--idm-line:#8d99a6}
 *{box-sizing:border-box}
@@ -112,51 +53,62 @@ button{transition:all .16s ease}
 .idm-period-selector select option{color:#1f2937;background:#fff}
 .idm-period-selector select:disabled{opacity:.7;cursor:wait}
 
-/* Rekap table: compact, single-line, strong grid */
+/* ===== REKAP PRESENSI ===== */
+/* Outer containers are transparent; borders belong to the table/grid. */
+.rekap-card,
+.rekap-container,
+.rekap-wrapper,
+.rekap-panel {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.rekap-card > .rekap-table,
+.rekap-container > .rekap-table,
+.rekap-wrapper > .rekap-table,
+.rekap-panel > .rekap-table {
+  border-collapse: collapse;
+}
+
 .rekap-table {
-  width:max-content !important;
-  min-width:0 !important;
+  width: max-content !important;
+  min-width: 0 !important;
   font-size: 10px !important;
   border-collapse: collapse !important;
   table-layout: fixed !important;
   border: 1px solid #cbd5e1 !important;
 }
-.rekap-table th, .rekap-table td {
+.rekap-table th,
+.rekap-table td {
   border: 1px solid #cbd5e1;
   white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
-.rekap-table th {
+.rekap-table th,
+.rekap-table thead th {
+  text-align: center !important;
+  vertical-align: middle !important;
   font-size: 10px !important;
+  font-weight: 600 !important;
   padding: 2px 1px !important;
   line-height: 1.15 !important;
 }
 .rekap-table td {
   font-size: 10px !important;
+  font-weight: 400 !important;
+  vertical-align: middle !important;
   padding: 0 !important;
   line-height: var(--rekap-row-h, 16px) !important;
   height: var(--rekap-row-h, 16px) !important;
   min-height: 0 !important;
-  box-sizing: border-box !important;
 }
-.rekap-table tbody tr {
+.rekap-table tbody tr,
+.rekap-table tbody td {
   height: var(--rekap-row-h, 16px) !important;
   min-height: 0 !important;
 }
-.rekap-table tbody td {
-  height: var(--rekap-row-h, 16px) !important;
-  max-height: none !important;
-  box-sizing: border-box !important;
-}
-.rekap-table th {
-  box-sizing: border-box !important;
-}
-.rekap-table .nama-cell {
-  white-space: nowrap !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: none;
-  padding: 0 8px !important;
-}
+.rekap-table tbody td { max-height: none !important; }
 
 .rekap-table .nama-cell,
 .rekap-table .nik-cell,
@@ -166,14 +118,52 @@ button{transition:all .16s ease}
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
-.rekap-table .nama-cell { width:180px !important; min-width:180px !important; max-width:180px !important; }
-.rekap-table .col-no { width:20px !important; min-width:20px !important; max-width:20px !important; }
-.rekap-table .col-nama { width:180px !important; min-width:180px !important; max-width:180px !important; }
-.rekap-table .col-nik { width:100px !important; min-width:100px !important; max-width:100px !important; }
-.rekap-table .col-bagian { width:100px !important; min-width:100px !important; max-width:100px !important; }
-.rekap-table .col-tanggal, .rekap-table .col-ringkasan { width:30px !important; min-width:30px !important; max-width:30px !important; }
-.rekap-table .nik-cell { width:100px !important; min-width:100px !important; max-width:100px !important; }
-.rekap-table .bagian-cell { width:100px !important; min-width:100px !important; max-width:100px !important; }
+.rekap-table .nama-cell {
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
+  padding: 0 8px !important;
+}
+.rekap-table .nik-cell {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+.rekap-table .bagian-cell {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+.rekap-table .col-no {
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+}
+.rekap-table .col-nama {
+  width: 180px !important;
+  min-width: 180px !important;
+  max-width: 180px !important;
+}
+.rekap-table .col-nik {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+.rekap-table .col-bagian {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+}
+.rekap-table .col-tanggal,
+.rekap-table .col-ringkasan,
+.rekap-table .status-cell,
+.rekap-table .tanggal-cell,
+.rekap-table td[class*="sum-"],
+.rekap-table th[class*="sum-"] {
+  width: 30px !important;
+  min-width: 30px !important;
+  max-width: 30px !important;
+}
 
 .rekap-table .kode-text {
   display: inline;
@@ -181,11 +171,7 @@ button{transition:all .16s ease}
   font-size: 10px;
   line-height: 1;
 }
-/* Spreadsheet-style status cells: color fills the whole cell, no bubble. */
 .rekap-table .status-cell {
-  width: 30px !important;
-  min-width: 30px !important;
-  max-width: 30px !important;
   padding: 0 !important;
   height: var(--rekap-row-h, 16px) !important;
   min-height: 0 !important;
@@ -194,84 +180,119 @@ button{transition:all .16s ease}
   vertical-align: middle;
   font-weight: 400;
 }
-.rekap-table .status-cell.status-blank { background: #fff !important; color: #111827; }
-.rekap-table .status-cell.status-OK { background: #fff !important; color: #111827; }
+.rekap-table .status-cell.status-blank,
+.rekap-table .status-cell.status-OK {
+  background: #fff !important;
+  color: #111827;
+}
 .rekap-table .status-cell.status-DT { background: #facc15 !important; color: #a16207 !important; }
 .rekap-table .status-cell.status-OFF { background: #ffd9d9 !important; color: #ef1111 !important; }
 .rekap-table .status-cell.status-S { background: #ffedd5 !important; color: #c2410c !important; }
 .rekap-table .status-cell.status-C { background: #dcfce7 !important; color: #16a34a !important; }
-
 .rekap-table .status-cell.status-LAM,
 .rekap-table .status-cell.status-LAP { background: #ffe4e6 !important; color: #dc2626 !important; }
 .rekap-table .status-cell.status-IDT,
 .rekap-table .status-cell.status-DL,
 .rekap-table .status-cell.status-IP { background: #cffafe !important; color: #0891b2 !important; }
+.rekap-table .status-cell.status-TSM { background: #e9d5ff !important; color: #581c87 !important; }
+.rekap-table .status-cell.status-M { background: #dc2626 !important; color: #fff !important; }
 .rekap-table .status-cell .kode-text { color: inherit !important; }
-/* Make summary columns visually distinct without pill/bubble UI. */
+.rekap-table .status-cell.status-TSM .kode-text { color: #581c87 !important; }
+.rekap-table .status-cell.status-M .kode-text { color: #fff !important; }
+
+/* Summary cells stay neutral; Tot.Pel keeps its value-based background. */
 .rekap-table td[class*="sum-"] {
-  width: 30px !important;
-  min-width: 30px !important;
-  max-width: 30px !important;
   padding: 0 !important;
   line-height: var(--rekap-row-h, 16px) !important;
   height: var(--rekap-row-h, 16px) !important;
+  background: #fff !important;
+  color: #111827 !important;
+  font-weight: 400 !important;
 }
-.rekap-table tbody tr:hover td:not(.status-cell) { background:#f8fafc !important; }
-.rekap-table-wrap{width:100%; overflow-x:auto; overflow-y:visible; display:flex; justify-content:center; --rekap-row-h:clamp(10px, calc((100vh - 190px) / max(1, var(--rekap-row-count))), 24px);}
-.rekap-legend { font-size: 12px !important; justify-content:center !important; width:100%; }
-.rekap-table-wrap table{min-width:max-content;}
+.rekap-table td.sum-Pel.totpel-cell {
+  background: var(--totpel-bg, #ecfdf5) !important;
+  color: #111827 !important;
+  font-weight: 400 !important;
+}
+.rekap-table tbody tr:hover td:not(.status-cell) { background: #f8fafc !important; }
+.rekap-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  display: flex;
+  justify-content: center;
+  --rekap-row-h: clamp(10px, calc((100vh - 190px) / max(1, var(--rekap-row-count))), 24px);
+}
+.rekap-table-wrap table { min-width: max-content; }
+.rekap-legend {
+  text-align: center !important;
+  font-size: 10px !important;
+  justify-content: center !important;
+  width: 100%;
+}
+
+/* ===== RINCIAN PELANGGARAN ===== */
+.pelanggaran-table th,
+.pelanggaran-table td {
+  font-size: 13px !important;
+  line-height: 18px !important;
+  vertical-align: middle !important;
+  box-sizing: border-box;
+}
+.pelanggaran-table tbody td { height: 28px; }
+.pelanggaran-table thead th { height: 34px; line-height: 16px !important; }
+.pelanggaran-table input {
+  font-size: 13px !important;
+  line-height: 16px !important;
+  vertical-align: middle;
+}
 
 
+/* ===== DETAIL KARYAWAN ===== */
+.detail-karyawan-layout { width: 100%; }
+.detail-karyawan-list { min-height: 0; }
+.detail-karyawan-list button {
+  min-height: var(--detail-row-h, 22px);
+  line-height: 1.1 !important;
+}
+.detail-karyawan-list .text-\[10px\] { font-size: 10px !important; }
+.detail-harian-table { font-size: 10px !important; }
+.detail-harian-table th,
+.detail-harian-table td {
+  font-size: 10px !important;
+  line-height: 1.05 !important;
+  height: var(--detail-row-h, 20px);
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+.detail-harian-table thead th { height: 30px; }
 
-.pelanggaran-table th,.pelanggaran-table td{font-size:13px!important;line-height:1.25!important}
-.pelanggaran-table input{font-size:13px!important}
-@media(max-width:900px){.idm-brandbar{min-height:50px;padding:3px 10px}.idm-logo{width:86px;height:36px}.idm-logo:before{font-size:12px;padding:2px 7px}.idm-brand-title h1{font-size:15px}.idm-brand-title p{font-size:9px}.idm-nav{height:32px}.idm-nav button{height:32px;padding:0 8px!important;font-size:8px!important}.idm-top-actions{gap:4px}.idm-top-actions button{padding:5px 7px!important;font-size:10px!important}}
+@media (max-height: 700px) {
+  .detail-karyawan-layout { height: calc(100vh - 135px) !important; }
+  .detail-harian-table th,
+  .detail-harian-table td { font-size: 9px !important; }
+}
 
-.upload-success{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 12px;width:max-content;max-width:60%;border:1px solid #bbf7d0;border-radius:7px;background:#f0fdf4;color:#166534;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:20}
+/* One consolidated mobile breakpoint. Values below are the effective values
+   from the previous duplicate rules; conflicting declarations are removed. */
+@media (max-width: 900px) {
+  .idm-brandbar { min-height: 50px; padding: 3px 10px; }
+  .idm-logo { width: 128px; height: 36px; }
+  .idm-logo:before { font-size: 12px; padding: 2px 7px; }
+  .idm-brand-title h1 { font-size: 18px; }
+  .idm-brand-title p { font-size: 12px; }
+  .idm-nav { height: 32px; overflow-x: auto; }
+  .idm-nav button { height: 32px; padding: 0 13px !important; font-size: 8px !important; }
+  .idm-top-actions { gap: 4px; }
+  .idm-top-actions button { padding: 5px 9px !important; font-size: 10px !important; }
+}
+
 /* common UI */
 .rounded-lg,.rounded-2xl{box-shadow:0 2px 8px rgba(31,41,55,.06)}
 .border-slate-200,.border-slate-300{border-color:#d7dee7!important}
 button.text-white{background-color:var(--idm-red)!important}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#edf1f5}::-webkit-scrollbar-thumb{background:#9da9b6;border-radius:8px}
-@media(max-width:900px){.idm-brand-title h1{font-size:18px}.idm-brand-title p{font-size:12px}.idm-logo{width:128px}.idm-nav{overflow-x:auto}.idm-nav button{padding:0 13px!important}.idm-top-actions button{padding-left:9px!important;padding-right:9px!important}}
-</style>
 
-
-
-
-<style>
-  /* Detail Karyawan: isi halaman penuh, teks 10px, tinggi baris adaptif */
-  .detail-karyawan-layout {
-    width: 100%;
-  }
-  .detail-karyawan-list {
-    min-height: 0;
-  }
-  .detail-karyawan-list button {
-    min-height: var(--detail-row-h, 22px);
-    line-height: 1.1 !important;
-  }
-  .detail-karyawan-list .text-\[10px\] {
-    font-size: 10px !important;
-  }
-  .detail-harian-table {
-    font-size: 10px !important;
-  }
-  .detail-harian-table th,
-  .detail-harian-table td {
-    font-size: 10px !important;
-    line-height: 1.05 !important;
-    height: var(--detail-row-h, 20px);
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-  }
-  .detail-harian-table thead th {
-    height: 30px;
-  }
-  @media (max-height: 700px) {
-    .detail-karyawan-layout { height: calc(100vh - 135px) !important; }
-    .detail-harian-table th, .detail-harian-table td { font-size: 9px !important; }
-  }
 </style>
 </head>
 <body>
@@ -1719,6 +1740,36 @@ function periodKeyOf(parsedData) {
   return `${parsedData.year}-${String(parsedData.monthNum).padStart(2, '0')}`;
 }
 
+// Normalisasi semua bentuk periode database menjadi satu kunci YYYY-MM.
+// Ini mencegah periode yang sama muncul dua kali, misalnya:
+// 2026-08 dan "Sat Aug 01 2026 00:00:00 GMT+0700 ...".
+function normalizePeriodKey(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const raw = String(value).trim();
+  const ym = raw.match(/^(\d{4})[-\/](\d{1,2})(?:[-\/](\d{1,2}))?(?:[T\s].*)?$/);
+  if (ym) {
+    const m = Number(ym[2]);
+    return m >= 1 && m <= 12 ? `${ym[1]}-${String(m).padStart(2, '0')}` : null;
+  }
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return raw;
+}
+
+// Rapikan daftar periode: satu bulan hanya boleh muncul satu kali.
+function normalizePeriods(rows) {
+  const seen = new Set();
+  return (rows || []).reduce((out, r) => {
+    const key = normalizePeriodKey(r?.period || r?.label);
+    if (!key || seen.has(key)) return out;
+    seen.add(key);
+    out.push({ ...r, period: key, label: formatPeriodLabel(key) });
+    return out;
+  }, []).sort((a, b) => String(b.period).localeCompare(String(a.period)));
+}
+
 // Format periode agar tidak pernah menampilkan objek Date JavaScript seperti
 // 'Sat Aug 01 2026 00:00:00 GMT+0700 (...)'.
 function formatPeriodLabel(value) {
@@ -1794,7 +1845,7 @@ function App() {
         }
 
         if (rows && rows.length > 0) {
-          const cleanRows = rows.filter(r => r && r.period).sort((a,b) => String(b.period).localeCompare(String(a.period)));
+          const cleanRows = normalizePeriods(rows.filter(r => r && (r.period || r.label)));
           setPeriods(cleanRows);
           const latest = cleanRows[0];
           const periodRes = await sheetsApi.get('getPeriod', { period: latest.period });
@@ -2377,86 +2428,3 @@ root.render(<App />);
 </script>
 </body>
 </html>
-
-<style id="summary-neutral-font">.rekap-table td[class*="sum-"]{font-weight:400 !important;color:#111827 !important;background:#fff !important;}
-/* ===== FINAL CLEAN TABLE RULES ===== */
-.rekap-table {
-  table-layout: fixed !important;
-  width: max-content !important;
-  border-collapse: collapse !important;
-  font-size: 10px !important;
-}
-.rekap-table th,
-.rekap-table thead th {
-  text-align: center !important;
-  vertical-align: middle !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
-}
-.rekap-table td {
-  font-size: 10px !important;
-  font-weight: 400 !important;
-  vertical-align: middle !important;
-}
-.rekap-table .col-no,
-.rekap-table .col-no th,
-.rekap-table .col-no td { width:20px !important; min-width:20px !important; max-width:20px !important; }
-.rekap-table .col-nama,
-.rekap-table .col-nama th,
-.rekap-table .col-nama td { width:180px !important; min-width:180px !important; max-width:180px !important; }
-.rekap-table .col-nik,
-.rekap-table .col-nik th,
-.rekap-table .col-nik td { width:100px !important; min-width:100px !important; max-width:100px !important; }
-.rekap-table .col-bagian,
-.rekap-table .col-bagian th,
-.rekap-table .col-bagian td { width:100px !important; min-width:100px !important; max-width:100px !important; }
-.rekap-table .status-cell,
-.rekap-table .tanggal-cell {
-  width:30px !important;
-  min-width:30px !important;
-  max-width:30px !important;
-}
-.rekap-table td[class*="sum-"],
-.rekap-table th[class*="sum-"] {
-  width:30px !important;
-  min-width:30px !important;
-  max-width:30px !important;
-}
-
-/* Status colors apply ONLY to date/status cells. Summary columns stay neutral. */
-.rekap-table .status-cell.status-TSM {
-  background:#e9d5ff !important;
-  color:#581c87 !important;
-  font-weight:400 !important;
-}
-.rekap-table .status-cell.status-TSM .kode-text {
-  color:#581c87 !important;
-}
-.rekap-table .status-cell.status-M {
-  background:#dc2626 !important;
-  color:#ffffff !important;
-  font-weight:400 !important;
-}
-.rekap-table .status-cell.status-M .kode-text {
-  color:#ffffff !important;
-}
-
-/* Legend/text immediately below the table centered */
-.rekap-legend {
-  text-align:center !important;
-  font-size:10px !important;
-}
-
-
-/* Final: summary columns stay neutral, except Tot.Pel which uses a value gradient. */
-.rekap-table td[class*="sum-"] {
-  background:#fff !important;
-  color:#111827 !important;
-  font-weight:400 !important;
-}
-.rekap-table td.sum-Pel.totpel-cell {
-  background:var(--totpel-bg,#ecfdf5) !important;
-  color:#111827 !important;
-  font-weight:400 !important;
-}
-</style>
