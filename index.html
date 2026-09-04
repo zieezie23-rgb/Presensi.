@@ -1753,6 +1753,16 @@ Untuk Cuti atau Sakit tidak perlu input cukup input portal HRD
 
 Terimakasih`;
 
+    // Buka WhatsApp SEBELUM proses async agar popup tidak diblokir browser.
+    // Teks akan langsung dipasang di kotak pesan WhatsApp Web.
+    let waWindow = null;
+    try {
+      waWindow = window.open(
+        'https://web.whatsapp.com/send?text=' + encodeURIComponent(whatsappText),
+        '_blank'
+      );
+    } catch (e) {}
+
     const cols = [
       ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
       ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'], ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
@@ -1821,7 +1831,7 @@ Terimakasih`;
     }
     if (!file) return;
 
-    // Perangkat yang mendukung Web Share: kirim gambar + teks sekaligus.
+    // HP/tablet yang mendukung Web Share: gambar + teks dikirim melalui menu Share.
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
@@ -1835,40 +1845,49 @@ Terimakasih`;
       }
     }
 
-    // Desktop: salin JPEG + teks ke clipboard dalam satu ClipboardItem.
-    // WhatsApp Web dapat mengambil gambar saat Ctrl+V; teks juga tersedia
-    // sebagai format text/plain pada clipboard untuk browser yang mendukungnya.
-    let clipboardCopied = false;
+    // DESKTOP: WhatsApp Web tidak mengizinkan browser menempelkan file
+    // langsung ke chat. Solusi yang stabil adalah:
+    // 1. teks sudah diprefill lewat URL WhatsApp Web;
+    // 2. gambar JPEG disalin ke clipboard;
+    // 3. pengguna tinggal klik chat lalu Ctrl+V.
+    let imageCopied = false;
     try {
-      if (navigator.clipboard && window.ClipboardItem) {
-        const imageBlob = await file.arrayBuffer().then((b) => new Blob([b], { type: 'image/jpeg' }));
+      if (navigator.clipboard && window.ClipboardItem && window.isSecureContext) {
         const item = new ClipboardItem({
-          'image/jpeg': imageBlob,
-          'text/plain': new Blob([whatsappText], { type: 'text/plain' }),
+          'image/jpeg': file,
         });
         await navigator.clipboard.write([item]);
-        clipboardCopied = true;
+        imageCopied = true;
       }
     } catch (err) {
-      clipboardCopied = false;
+      imageCopied = false;
     }
 
-    window.open('https://web.whatsapp.com/', '_blank');
+    // Jika popup tadi diblokir, coba buka lagi setelah proses selesai.
+    if (!waWindow || waWindow.closed) {
+      try {
+        waWindow = window.open(
+          'https://web.whatsapp.com/send?text=' + encodeURIComponent(whatsappText),
+          '_blank'
+        );
+      } catch (e) {}
+    }
 
-    if (clipboardCopied) {
-      setSyncError('Gambar + pesan sudah disalin. Di WhatsApp Web pilih chat lalu tekan Ctrl+V. Jika yang ditempel hanya gambar, tempel teks setelahnya dengan Ctrl+V.');
+    if (imageCopied) {
+      setSyncError('WhatsApp Web sudah dibuka dengan pesan siap. Pilih chat lalu tekan Ctrl+V untuk menempelkan gambar JPEG.');
       return;
     }
 
-    // Fallback terakhir jika clipboard gambar tidak diizinkan browser.
+    // Fallback jika clipboard gambar tidak diizinkan browser.
     const url = URL.createObjectURL(file);
     const a = document.createElement('a');
     a.href = url;
     a.download = file.name;
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-    try { await navigator.clipboard.writeText(whatsappText); } catch (e) {}
-    setSyncError('Gambar JPEG sudah diunduh dan pesan teks sudah disalin. Buka WhatsApp Web, pilih chat, tempel teks, lalu lampirkan gambar.');
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setSyncError('Pesan WhatsApp sudah disiapkan. Gambar JPEG sudah diunduh karena browser tidak mengizinkan copy gambar. Lampirkan file tersebut di WhatsApp.');
   }, [filteredData]);
 
   const persistEmployeeDb = useCallback((next) => {
