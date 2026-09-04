@@ -52,6 +52,27 @@
 .rekap-table td {
   font-weight: 400 !important;
 }
+
+<style>
+/* Posisi vertikal tabel rincian pelanggaran */
+.pelanggaran-table th,
+.pelanggaran-table td {
+  vertical-align: middle !important;
+  line-height: 18px !important;
+  box-sizing: border-box;
+}
+.pelanggaran-table tbody td {
+  height: 28px;
+}
+.pelanggaran-table thead th {
+  height: 34px;
+  line-height: 16px !important;
+}
+.pelanggaran-table td input {
+  line-height: 16px !important;
+  vertical-align: middle;
+}
+</style>
 </style>
 
 <style id="indomaret-premium-theme">
@@ -1793,26 +1814,92 @@ function App() {
 
   const exportExcel = useCallback(() => {
     if (!filteredData) return;
-    const { headers, rows } = getExportRows();
+
+    // Export Excel = database bulan berjalan dalam format tabel datar/rapi:
+    // satu baris = satu karyawan pada satu tanggal, bukan format rekap matriks.
+    const headers = [
+      'No', 'NIK', 'Nama', 'Bagian', 'Tanggal', 'Hari', 'Shift',
+      'Masuk Seharusnya', 'Pulang Seharusnya', 'Masuk Aktual', 'Pulang Aktual',
+      'Kode', 'Jenis', 'Keterangan', 'Penjelasan Karyawan'
+    ];
+
+    const rows = [];
+    let no = 1;
+    const monthName = MONTH_ID[Object.keys(MONTH_NUM).find((k) => MONTH_NUM[k] === filteredData.monthNum)] || '';
+
+    filteredData.employees
+      .slice()
+      .sort((a, b) => a.nama.localeCompare(b.nama, 'id'))
+      .forEach((emp) => {
+        for (let d = 1; d <= filteredData.monthLength; d++) {
+          const rec = emp.days?.[d];
+          if (!rec) continue;
+
+          const dt = new Date(filteredData.year, filteredData.monthNum - 1, d);
+          const hari = WEEKDAY_FULL_ID[dt.getDay()] || '';
+          const info = shiftInfoFor(rec.shift);
+          const jenis = CODE_META[rec.code]?.label || rec.status || rec.code || '';
+          const keterangan =
+            rec.code === 'M' ? 'Mangkir' :
+            rec.code === 'LAM' ? 'Lupa Absen Masuk' :
+            rec.code === 'LAP' ? 'Lupa Absen Pulang' :
+            rec.code === 'TSM' ? 'Salah TSM' :
+            (rec.status || rec.code || '');
+
+          rows.push([
+            no++,
+            String(emp.nik || ''),
+            emp.nama || '',
+            emp.bagian || '',
+            `${String(d).padStart(2, '0')} ${monthName} ${filteredData.year}`,
+            hari,
+            rec.shift || '',
+            info?.masuk || '—',
+            info?.pulang || '—',
+            rec.masuk && rec.masuk !== '00:00' ? rec.masuk : '—',
+            rec.pulang && rec.pulang !== '00:00' ? rec.pulang : '—',
+            rec.code || '',
+            jenis,
+            keterangan,
+            rec.penjelasan || ''
+          ]);
+        }
+      });
+
     const ws = XLSX.utils.aoa_to_sheet([
-      [`REKAP PRESENSI - ${filteredData.monthLabelId || ''}`],
-      [],
+      [`DATABASE PRESENSI - ${filteredData.monthLabelId || ''}`],
+      [`Periode: ${filteredData.monthLabelId || ''}`],
       headers,
       ...rows
     ]);
+
     ws['!freeze'] = { xSplit: 4, ySplit: 3 };
     ws['!autofilter'] = { ref: `A3:${XLSX.utils.encode_col(headers.length - 1)}${rows.length + 3}` };
-    ws['!cols'] = headers.map((h, i) => {
-      if (i === 1) return { wch: 28 };
-      if (i === 2) return { wch: 14 };
-      if (i === 3) return { wch: 18 };
-      return { wch: Math.max(5, Math.min(18, String(h).length + 2)) };
-    });
+    ws['!cols'] = [
+      { wch: 6 }, { wch: 14 }, { wch: 30 }, { wch: 18 }, { wch: 24 },
+      { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 16 },
+      { wch: 16 }, { wch: 10 }, { wch: 22 }, { wch: 22 }, { wch: 35 }
+    ];
+
+    // Tampilan rapi untuk Excel.
+    ws['!rows'] = [
+      { hpt: 22 },
+      { hpt: 18 },
+      { hpt: 22 }
+    ];
+    for (let c = 0; c < headers.length; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r: 2, c })];
+      if (cell) cell.s = { font: { bold: true }, alignment: { horizontal: 'center', vertical: 'center' } };
+    }
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Rekap Presensi');
-    XLSX.writeFile(wb, `rekap-presensi-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, 'Database Bulan');
+    XLSX.writeFile(
+      wb,
+      `database-presensi-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.xlsx`
+    );
     setShowExportMenu(false);
-  }, [filteredData, getExportRows]);
+  }, [filteredData]);
 
   const exportPdf = useCallback(() => {
     if (!filteredData) return;
@@ -1873,10 +1960,11 @@ function App() {
       const headTr = document.createElement('tr');
       cols.forEach(([label, align]) => {
         const th = document.createElement('th');
-        th.textContent = label;
-        // Gunakan line-height setara tinggi sel. Ini lebih stabil di html2canvas
-        // dibanding flex untuk posisi teks vertikal.
-        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;font-weight:600;height:30px;line-height:30px;box-sizing:border-box;`;
+        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;font-weight:600;height:34px;box-sizing:border-box;`;
+        const span = document.createElement('span');
+        span.textContent = label;
+        span.style.cssText = 'display:flex;align-items:center;justify-content:' + (align === 'left' ? 'flex-start' : 'center') + ';height:34px;line-height:normal;box-sizing:border-box;';
+        th.appendChild(span);
         headTr.appendChild(th);
       });
       thead.appendChild(headTr);
@@ -1899,8 +1987,11 @@ function App() {
         ];
         cells.forEach(([val, align]) => {
           const td = document.createElement('td');
-          td.textContent = val == null ? '' : String(val);
-          td.style.cssText = `border:1px solid #cbd5e1;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;background:#fff;height:28px;line-height:28px;box-sizing:border-box;`;
+          td.style.cssText = `border:1px solid #cbd5e1;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;background:#fff;height:32px;box-sizing:border-box;`;
+          const span = document.createElement('span');
+          span.textContent = val == null ? '' : String(val);
+          span.style.cssText = 'display:flex;align-items:center;justify-content:' + (align === 'left' ? 'flex-start' : 'center') + ';height:32px;line-height:normal;box-sizing:border-box;';
+          td.appendChild(span);
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
