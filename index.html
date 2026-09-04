@@ -107,8 +107,8 @@ button{transition:all .16s ease}
 .idm-content{max-width:none;width:100%;margin:0;padding:7px 10px 10px}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
 .idm-period strong{color:#1f2937;font-size:13px}
-.idm-period-selector{display:flex;align-items:center;justify-content:center;gap:5px;min-width:150px}
-.idm-period-selector select{appearance:none;background:transparent;border:0;outline:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;padding:2px 18px 2px 2px;text-align:center}
+.idm-period-selector{display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:150px}
+.idm-period-selector select{appearance:none;background:transparent;border:0;outline:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;padding:2px 18px 2px 2px;text-align:left}
 .idm-period-selector select option{color:#1f2937;background:#fff}
 .idm-period-selector select:disabled{opacity:.7;cursor:wait}
 
@@ -1719,6 +1719,29 @@ function periodKeyOf(parsedData) {
   return `${parsedData.year}-${String(parsedData.monthNum).padStart(2, '0')}`;
 }
 
+// Format periode agar tidak pernah menampilkan objek Date JavaScript seperti
+// 'Sat Aug 01 2026 00:00:00 GMT+0700 (...)'.
+function formatPeriodLabel(value) {
+  const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  if (value === null || value === undefined || value === '') return '';
+  const raw = String(value).trim();
+
+  // Prioritaskan format periode YYYY-MM dari database.
+  const ym = raw.match(/^(\d{4})[-\/](\d{1,2})$/);
+  if (ym) {
+    const m = Number(ym[2]);
+    return m >= 1 && m <= 12 ? `${monthNames[m - 1]} ${ym[1]}` : raw;
+  }
+
+  // Jika backend mengembalikan Date sebagai teks, ambil bulan dan tahun saja.
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return `${monthNames[parsed.getMonth()]} ${parsed.getFullYear()}`;
+  }
+
+  return raw;
+}
+
 
 
 
@@ -2220,11 +2243,11 @@ function App() {
                 title="Pilih periode"
               >
                 {periods.map((r) => (
-                  <option key={r.period} value={r.period}>{r.label || r.period}</option>
+                  <option key={r.period} value={r.period}>{formatPeriodLabel(r.period || r.label)}</option>
                 ))}
               </select>
             ) : (
-              <p>{data ? (data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
+              <p>{data ? formatPeriodLabel(periodKeyOf(data) || data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
             )}
             {loadingPeriod && <RefreshCw size={12} className="animate-spin" />}
           </div>
