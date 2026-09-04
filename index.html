@@ -276,6 +276,9 @@ const X = makeIcon(<><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x
 const Building2 = makeIcon(<><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18Z" /><path d="M10 6h4M10 10h4M10 14h4M10 18h4" /><path d="M2 22h20" /></>);
 const Plus = makeIcon(<><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>);
 const Trash2 = makeIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>);
+const Database = makeIcon(<><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></>);
+const Home = makeIcon(<><path d="M3 9l9-7 9 7" /><path d="M9 22V12h6v10" /><path d="M5 10v10a1 1 0 0 0 1 1h3M19 10v10a1 1 0 0 1-1 1h-3" /></>);
+const Settings = makeIcon(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>);
 const UserCog = makeIcon(<><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h3" /><circle cx="18" cy="18" r="3" /><path d="M18 14.5v1M18 20.5v1M14.5 18h1M20.5 18h1M15.5 15.5l.7.7M20.3 20.3l.7.7M15.5 20.5l.7-.7M20.3 15.7l.7-.7" /></>);
 const Lock = makeIcon(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>);
 const Menu = makeIcon(<><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>);
@@ -302,6 +305,7 @@ function TriMenuIcon({ size = 22 }) {
 /* ---------------------------------------------------------------------- */
 
 const FONT_IMPORT = `@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');`;
+const LOGO_IMG = 'data:image/png;base64,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';
 
 const MONTH_ID = {
   January: 'Januari', February: 'Februari', March: 'Maret', April: 'April',
@@ -719,7 +723,7 @@ function Dropzone({ onFile, busy, error }) {
 /*  Rekap matrix tab                                                        */
 /* ---------------------------------------------------------------------- */
 
-function RekapTab({ data, onSelectEmployee }) {
+function RekapTab({ data, onSelectEmployee, onSelectViolation }) {
   const days = Array.from({ length: data.monthLength }, (_, i) => i + 1);
   const weekdayFor = (d) => {
     if (!data.year || !data.monthNum) return '';
@@ -850,11 +854,13 @@ function RekapTab({ data, onSelectEmployee }) {
                 </td>
                 {days.map((d) => {
                   const code = emp.days[d]?.code;
+                  const isPelanggaran = code && PELANGGARAN_CODES.includes(code);
                   return (
                     <td
                       key={d}
-                      className={`status-cell status-${code || 'blank'} border-slate-400`}
+                      className={`status-cell status-${code || 'blank'} border-slate-400${isPelanggaran ? ' cursor-pointer hover:underline' : ''}`}
                       title={code ? (CODE_META[code]?.label || code) : 'Hadir'}
+                      onClick={isPelanggaran ? () => onSelectViolation(emp.nik) : undefined}
                     >
                       {code && code !== 'OK' ? <Badge code={code} /> : null}
                     </td>
@@ -865,7 +871,7 @@ function RekapTab({ data, onSelectEmployee }) {
                 <td className="text-center px-1 py-1 border-slate-400 sum-S">{emp.totals.S || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-C">{emp.totals.C || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-IDT">{emp.totals.IDT || '-'}</td>
-                <td className="text-center px-1 py-1 border-slate-400 sum-Pel totpel-cell" style={pelanggaranColor(emp.pelanggaran)}>{emp.pelanggaran || '-'}</td>
+                <td className="text-center px-1 py-1 border-slate-400 sum-Pel totpel-cell cursor-pointer hover:underline" style={pelanggaranColor(emp.pelanggaran)} onClick={() => onSelectViolation(emp.nik)}>{emp.pelanggaran || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAM">{emp.totals.LAM || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-LAP">{emp.totals.LAP || '-'}</td>
                 <td className="text-center px-1 py-1 border-slate-400 sum-TSM">{emp.totals.TSM || '-'}</td>
@@ -927,6 +933,20 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
     return out;
   }, [data]);
 
+  const explainedRows = useMemo(() => {
+    const out = [];
+    data.employees.forEach((emp) => {
+      for (let d = 1; d <= data.monthLength; d++) {
+        const rec = emp.days[d];
+        if (!rec || !PELANGGARAN_CODES.includes(rec.code) || !rec.sudahDijelaskan) continue;
+        const info = shiftInfoFor(rec.shift);
+        out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d, masukSeharusnya: info?.masuk || '—', pulangSeharusnya: info?.pulang || '—' });
+      }
+    });
+    out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+    return out;
+  }, [data]);
+
   const tanggalLabel = (d) => {
     if (!data.year || !data.monthNum) return String(d);
     const dt = new Date(data.year, data.monthNum - 1, d);
@@ -959,6 +979,26 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
           </tbody>
         </table>
       </div>
+
+      <div className="mb-2 mt-6 text-xs text-slate-500">{explainedRows.length} pelanggaran sudah dijelaskan</div>
+      <div className="rounded-lg border border-slate-300 overflow-auto" style={{maxHeight:'70vh'}}>
+        <table className="w-full text-[10px] border-collapse">
+          <thead><tr style={{ backgroundColor: 'var(--idm-navy)' }} className="text-white">
+            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} style={{ backgroundColor: 'var(--idm-navy)', borderColor: '#0a5cc4' }} className={`sticky top-0 px-1.5 py-1 border font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {explainedRows.map((r,i)=><tr key={`${r.nik}-${r.day}`} className={i%2===0?'bg-white':'bg-slate-50'}>
+              <td className="px-1.5 py-1 border border-slate-200 text-center">{i+1}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.nik}</td>
+              <td className="px-1.5 py-1 border border-slate-200 font-medium cursor-pointer" onClick={()=>onSelectEmployee(r.nik)}>{r.nama}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.shift||'—'}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masukSeharusnya}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulangSeharusnya}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masuk&&r.masuk!=='00:00'?r.masuk:'—'}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulang&&r.pulang!=='00:00'?r.pulang:'—'}</td>
+              <td className="px-1.5 py-1 border border-slate-200 text-center whitespace-nowrap">{String(r.day).padStart(2,'0')}</td><td className="px-1.5 py-1 border border-slate-200 text-center"><Badge code={r.code}/></td>
+              <td className="px-1.5 py-1 border border-slate-200 text-slate-600">{r.penjelasan}</td>
+            </tr>)}
+            {explainedRows.length===0&&<tr><td colSpan={11} className="text-center text-slate-400 py-8">Belum ada pelanggaran yang dijelaskan.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -986,45 +1026,6 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
         <button disabled={!canSave} onClick={() => onExplain(row.nik, row.day, text.trim())} className="rounded px-2 py-1 text-[10px] font-semibold text-white disabled:opacity-40" style={{ backgroundColor:'#005baa' }}>Simpan</button>
       </td>
     </tr>
-  );
-}
-
-function SudahDijelaskanTab({ data, onSelectEmployee }) {
-  const rows = useMemo(() => {
-    const out = [];
-    data.employees.forEach((emp) => {
-      for (let d = 1; d <= data.monthLength; d++) {
-        const rec = emp.days[d];
-        if (!rec || !PELANGGARAN_CODES.includes(rec.code) || !rec.sudahDijelaskan) continue;
-        const info = shiftInfoFor(rec.shift);
-        out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d, masukSeharusnya: info?.masuk || '—', pulangSeharusnya: info?.pulang || '—' });
-      }
-    });
-    out.sort((a,b) => a.day-b.day || a.nik.localeCompare(b.nik));
-    return out;
-  }, [data]);
-  return (
-    <div>
-      <div className="mb-2 text-xs text-slate-500">{rows.length} pelanggaran sudah dijelaskan</div>
-      <div className="rounded-lg border border-slate-300 overflow-auto" style={{maxHeight:'70vh'}}>
-        <table className="w-full text-[10px] border-collapse">
-          <thead><tr style={{ backgroundColor: 'var(--idm-navy)' }} className="text-white">
-            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} style={{ backgroundColor: 'var(--idm-navy)', borderColor: '#0a5cc4' }} className={`sticky top-0 px-1.5 py-1 border font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
-          </tr></thead>
-          <tbody>
-            {rows.map((r,i)=><tr key={`${r.nik}-${r.day}`} className={i%2===0?'bg-white':'bg-slate-50'}>
-              <td className="px-1.5 py-1 border border-slate-200 text-center">{i+1}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.nik}</td>
-              <td className="px-1.5 py-1 border border-slate-200 font-medium cursor-pointer" onClick={()=>onSelectEmployee(r.nik)}>{r.nama}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.shift||'—'}</td>
-              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masukSeharusnya}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulangSeharusnya}</td>
-              <td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.masuk&&r.masuk!=='00:00'?r.masuk:'—'}</td><td className="px-1.5 py-1 border border-slate-200 text-center font-mono">{r.pulang&&r.pulang!=='00:00'?r.pulang:'—'}</td>
-              <td className="px-1.5 py-1 border border-slate-200 text-center whitespace-nowrap">{String(r.day).padStart(2,'0')}</td><td className="px-1.5 py-1 border border-slate-200 text-center"><Badge code={r.code}/></td>
-              <td className="px-1.5 py-1 border border-slate-200 text-slate-600">{r.penjelasan}</td>
-            </tr>)}
-            {rows.length===0&&<tr><td colSpan={11} className="text-center text-slate-400 py-8">Belum ada pelanggaran yang dijelaskan.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-    </div>
   );
 }
 
@@ -1178,45 +1179,45 @@ function KaryawanTab({ employeeDb, onAdd, onDelete }) {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-slate-500">{employeeDb.length} karyawan terdaftar di database</p>
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 82px)' }}>
+      <div className="flex items-center justify-between mb-2 shrink-0">
+        <p className="text-xs text-slate-500">{employeeDb.length} karyawan terdaftar di database</p>
         <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-2.5 text-slate-400" />
+          <Search size={12} className="absolute left-2.5 top-2 text-slate-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari nama / NIK / bagian…"
-            className="text-sm pl-7 pr-2 py-1.5 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400 w-64"
+            className="text-xs pl-7 pr-2 py-1 rounded-md border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400 w-56"
           />
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 overflow-auto" style={{ maxHeight: '60vh' }}>
-        <table className="w-full text-[11px] border-collapse table-fixed" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
+      <div className="rounded-lg border border-slate-200 overflow-auto flex-1 min-h-0">
+        <table className="w-full text-[10px] border-collapse table-fixed" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
           <thead>
             <tr className="bg-blue-700 text-white">
-              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-1 font-medium" style={{ width: 34 }}>No</th>
-              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-1 font-medium">Nama</th>
-              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-1 font-medium">NIK</th>
-              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-1 font-medium">Bagian</th>
-              <th className="sticky top-0 bg-blue-700 text-center px-1.5 py-1 font-medium" style={{ width: 50 }}>Aksi</th>
+              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-0.5 font-medium" style={{ width: 34 }}>No</th>
+              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-0.5 font-medium">Nama</th>
+              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-0.5 font-medium">NIK</th>
+              <th className="sticky top-0 bg-blue-700 text-left px-1.5 py-0.5 font-medium">Bagian</th>
+              <th className="sticky top-0 bg-blue-700 text-center px-1.5 py-0.5 font-medium" style={{ width: 50 }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((emp, idx) => (
               <tr key={emp.nik} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                <td className="px-1.5 py-1 border-t border-slate-100 text-slate-400">{idx + 1}</td>
-                <td className="px-1.5 py-1 border-t border-slate-100 font-medium text-slate-800 truncate">{emp.nama}</td>
-                <td className="px-1.5 py-1 border-t border-slate-100 text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.nik}</td>
-                <td className="px-1.5 py-1 border-t border-slate-100 text-slate-500 truncate">{emp.bagian || '—'}</td>
-                <td className="px-1.5 py-1 border-t border-slate-100 text-center">
+                <td className="px-1.5 py-0.5 border-t border-slate-100 text-slate-400">{idx + 1}</td>
+                <td className="px-1.5 py-0.5 border-t border-slate-100 font-medium text-slate-800 truncate">{emp.nama}</td>
+                <td className="px-1.5 py-0.5 border-t border-slate-100 text-slate-500 truncate" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{emp.nik}</td>
+                <td className="px-1.5 py-0.5 border-t border-slate-100 text-slate-500 truncate">{emp.bagian || '—'}</td>
+                <td className="px-1.5 py-0.5 border-t border-slate-100 text-center">
                   <button
                     onClick={() => { if (window.confirm(`Hapus ${emp.nama} dari database karyawan?`)) onDelete(emp.nik); }}
-                    className="inline-flex items-center justify-center rounded-md p-1 text-rose-500 hover:bg-rose-50"
+                    className="inline-flex items-center justify-center rounded-md p-0.5 text-rose-500 hover:bg-rose-50"
                     title="Hapus karyawan"
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                   </button>
                 </td>
               </tr>
@@ -1228,8 +1229,8 @@ function KaryawanTab({ employeeDb, onAdd, onDelete }) {
         </table>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-3.5 mt-4">
-        <p className="text-xs font-medium text-slate-500 mb-2.5">Tambah karyawan baru</p>
+      <div className="rounded-lg border border-slate-200 bg-white p-2.5 mt-2 shrink-0">
+        <p className="text-xs font-medium text-slate-500 mb-2">Tambah karyawan baru</p>
         <form onSubmit={submit} className="flex flex-wrap items-start gap-2">
           <input
             value={nama}
@@ -1318,10 +1319,13 @@ async function openDatabaseSpreadsheetUrl() {
 const NAV_TABS = [
   { id: 'rekap', label: 'REKAP PRESENSI', icon: Users },
   { id: 'pelanggaran', label: 'RINCIAN PELANGGARAN', icon: AlertTriangle },
-  { id: 'dijelaskan', label: 'SUDAH DIJELASKAN', icon: CheckCircle2 },
   { id: 'detail', label: 'DETAIL KARYAWAN', icon: Clock },
+];
+
+const ADMIN_TABS = [
   { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
   { id: 'pola-shift', label: 'DATA / POLA SHIFT', icon: Clock },
+  { id: 'database', label: 'DATABASE', icon: Database },
 ];
 
 function PolaShiftTab() {
@@ -1394,7 +1398,7 @@ function PolaShiftTab() {
       )}
 
       <div ref={scrollRef} className="pola-shift-scroll rounded-lg border border-slate-200 bg-white">
-        <table className="pola-shift-table w-full text-[11px] border-collapse">
+        <table className="pola-shift-table w-full text-[10px] border-collapse">
           <thead><tr className="bg-blue-700 text-white">
             <th className="px-2 py-1.5 text-center">No</th><th className="px-2 py-1.5 text-center">Kode Shift</th><th className="px-2 py-1.5 text-center">Masuk</th><th className="px-2 py-1.5 text-center">Pulang</th><th className="px-2 py-1.5 text-center">Keterangan</th><th className="px-2 py-1.5 text-center">Aksi</th>
           </tr></thead>
@@ -1414,13 +1418,40 @@ function PolaShiftTab() {
   );
 }
 
+function DatabaseTab({ onOpenAccessModal }) {
+  return (
+    <div>
+      <div className="mb-3">
+        <p className="text-sm font-semibold text-slate-700">Database</p>
+        <p className="text-xs text-slate-500 mt-0.5">Akses spreadsheet database yang menyimpan data presensi, karyawan, dan pola shift.</p>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-4 flex items-center gap-3.5">
+        <div className="shrink-0 rounded-md p-2.5" style={{ backgroundColor:'#eaf3fc' }}>
+          <Database size={20} color="#06479f" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-slate-700">Database Spreadsheet</p>
+          <p className="text-xs text-slate-500 mt-0.5">Buka spreadsheet database untuk melihat atau mengelola data secara langsung. Memerlukan kode akses.</p>
+        </div>
+        <button onClick={onOpenAccessModal} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
+          className="inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-xs font-semibold text-white shrink-0"
+          style={{ backgroundColor:'#06479f' }}>
+          <Database size={14} /> Buka Database
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 function SideMenu({ tab, onSelect, onClose }) {
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
       <div className="absolute inset-0" style={{ backgroundColor: 'rgba(15,23,42,.5)' }} />
       <div
         className="absolute left-0 top-0 bg-white shadow-2xl flex flex-col rounded-br-xl overflow-hidden"
-        style={{ width: 220, maxWidth: '75vw' }}
+        style={{ width: 220, maxWidth: '75vw', maxHeight: '100vh' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="idm-brandbar" style={{ minHeight: 0, padding: '14px 16px' }}>
@@ -1431,7 +1462,7 @@ function SideMenu({ tab, onSelect, onClose }) {
             <X size={16} />
           </button>
         </div>
-        <div className="py-2">
+        <div className="py-2 overflow-y-auto">
           {NAV_TABS.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
@@ -1444,6 +1475,38 @@ function SideMenu({ tab, onSelect, onClose }) {
                   color: active ? '#005baa' : '#374151',
                   backgroundColor: active ? '#eaf3fc' : 'transparent',
                   borderLeft: active ? '3px solid #005baa' : '3px solid transparent',
+                }}
+              >
+                <Icon size={14} /> {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminMenu({ tab, onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div
+        className="absolute rounded-lg bg-white shadow-2xl overflow-hidden border border-slate-200"
+        style={{ top: 60, right: 10, width: 190 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="py-1.5">
+          {ADMIN_TABS.map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => { onSelect(t.id); onClose(); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-xs font-semibold"
+                style={{
+                  color: active ? '#005baa' : '#374151',
+                  backgroundColor: active ? '#eaf3fc' : 'transparent',
                 }}
               >
                 <Icon size={14} /> {t.label}
@@ -1562,6 +1625,7 @@ function App() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -1757,8 +1821,8 @@ function App() {
     <div className="idm-shell">
       <style>{FONT_IMPORT}</style>
       <div className="idm-brandbar">
-        <button onClick={() => setShowSideMenu(true)} aria-label="Menu" className="idm-menu-btn">
-          <TriMenuIcon size={34} />
+        <button aria-label="Menu" className="idm-menu-btn" style={{ width: 'auto', height: 'auto' }}>
+          <img src={LOGO_IMG} alt="Indomaret" style={{ width: 125, height: 'auto', objectFit: 'contain' }} />
         </button>
         <div className="idm-brand-title">
           <h1>REKAP PRESENSI</h1>
@@ -1769,29 +1833,39 @@ function App() {
         )}
         {(
           <div className="idm-top-actions">
-            <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
-            <button onClick={() => fileInputRef.current?.click()} disabled={busy}
-              className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-              style={{ backgroundColor:'#005baa' }}>
-              {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD LHPK
-            </button>
-            {data && (
+            {tab === 'rekap' ? (
               <>
-                <button onClick={() => window.location.reload()}
-                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                  style={{ backgroundColor:'#fff',color:'#374151' }}>
-                  <RefreshCw size={15}/> REFRESH
+                <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+                <button onClick={() => fileInputRef.current?.click()} disabled={busy}
+                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                  style={{ backgroundColor:'#005baa' }}>
+                  {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD LHPK
                 </button>
-                <button onClick={() => document.querySelector('[data-download-csv]')?.click()}
-                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                  style={{ backgroundColor:'#ffd100',color:'#111827' }}>
-                  <Download size={15}/> EXPORT
-                </button>
-                        <button onClick={() => setShowAccessModal(true)} title="Buka database spreadsheet" aria-label="Buka database spreadsheet"
-                  className="inline-flex items-center justify-center rounded-md px-2.5 py-2.5 text-white"
-                  style={{ backgroundColor:'#06479f' }}>⚙</button>
+                {data && (
+                  <>
+                    <button onClick={() => window.location.reload()}
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
+                      style={{ backgroundColor:'#fff',color:'#374151' }}>
+                      <RefreshCw size={15}/> REFRESH
+                    </button>
+                    <button onClick={() => document.querySelector('[data-download-csv]')?.click()}
+                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
+                      style={{ backgroundColor:'#ffd100',color:'#111827' }}>
+                      <Download size={15}/> EXPORT
+                    </button>
+                    <button onClick={() => setShowAdminMenu(true)} title="Menu admin" aria-label="Menu admin"
+                      className="inline-flex items-center justify-center">
+                      <Settings size={26} color="#fff" />
+                    </button>
+                  </>
+                )}
               </>
+            ) : (
+              <button onClick={() => setTab('rekap')} title="Kembali ke halaman utama" aria-label="Kembali ke halaman utama"
+                className="inline-flex items-center justify-center">
+                <Home size={26} color="#fff" />
+              </button>
             )}
           </div>
         )}
@@ -1821,7 +1895,7 @@ function App() {
           </div>
         )}
 
-        {!data && tab !== 'karyawan' && (
+        {!data && tab !== 'karyawan' && tab !== 'pola-shift' && tab !== 'database' && (
           <div className="flex flex-col items-center justify-center text-center py-16 text-slate-400">
             <FileWarning size={28} className="mb-3" />
             <p className="text-sm font-medium text-slate-500">Belum ada data presensi</p>
@@ -1829,13 +1903,10 @@ function App() {
           </div>
         )}
         {tab === 'rekap' && data && (
-          <RekapTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
+          <RekapTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} onSelectViolation={(nik) => { setSelectedNik(nik); setTab('pelanggaran'); }} />
         )}
         {tab === 'pelanggaran' && data && (
           <PelanggaranTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} onExplain={handleExplain} />
-        )}
-        {tab === 'dijelaskan' && data && (
-          <SudahDijelaskanTab data={filteredData} onSelectEmployee={(nik) => { setSelectedNik(nik); setTab('detail'); }} />
         )}
         {tab === 'detail' && data && (
           <DetailTab data={filteredData} selectedNik={selectedNik} onSelectEmployee={setSelectedNik} />
@@ -1846,9 +1917,15 @@ function App() {
         {tab === 'pola-shift' && (
           <PolaShiftTab />
         )}
+        {tab === 'database' && (
+          <DatabaseTab onOpenAccessModal={() => setShowAccessModal(true)} />
+        )}
       </div>
       {showSideMenu && (
         <SideMenu tab={tab} onSelect={setTab} onClose={() => setShowSideMenu(false)} />
+      )}
+      {showAdminMenu && (
+        <AdminMenu tab={tab} onSelect={setTab} onClose={() => setShowAdminMenu(false)} />
       )}
       {showAccessModal && (
         <AccessCodeModal
