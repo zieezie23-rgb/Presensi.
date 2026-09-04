@@ -13,6 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/3.10.1/Recharts.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   body { margin: 0; }
 
@@ -299,6 +300,14 @@ function TriMenuIcon({ size = 22 }) {
     </svg>
   );
 }
+function WhatsAppIcon({ size = 15, color = '#25D366' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+      <path d="M12.01 2C6.487 2 2 6.486 2 12.01c0 1.986.577 3.836 1.573 5.397L2 22l4.712-1.535A9.94 9.94 0 0 0 12.01 22C17.533 22 22 17.514 22 11.99 22 6.466 17.533 2 12.01 2zm0 18.13a8.11 8.11 0 0 1-4.132-1.13l-.296-.176-3.09.977.98-3.075-.19-.316A8.09 8.09 0 0 1 3.9 12.01c0-4.472 3.638-8.11 8.11-8.11 4.472 0 8.11 3.638 8.11 8.11 0 4.472-3.638 8.12-8.11 8.12z" />
+    </svg>
+  );
+}
 
 /* ---------------------------------------------------------------------- */
 /*  Constants & helpers                                                    */
@@ -489,6 +498,38 @@ function shiftInfoFor(shiftCode) {
   return key && SHIFT_TABLE[key] ? SHIFT_TABLE[key] : null;
 }
 
+function getUnexplainedViolationRows(data) {
+  const out = [];
+  data.employees.forEach((emp) => {
+    for (let d = 1; d <= data.monthLength; d++) {
+      const rec = emp.days[d];
+      if (!rec || !PELANGGARAN_CODES.includes(rec.code) || rec.sudahDijelaskan) continue;
+      const info = shiftInfoFor(rec.shift);
+      const wkFull = data.year && data.monthNum ? WEEKDAY_FULL_ID[new Date(data.year, data.monthNum - 1, d).getDay()] : '';
+      out.push({
+        ...rec,
+        nik: emp.nik,
+        nama: emp.nama,
+        bagian: emp.bagian || '',
+        day: d,
+        tanggalLabel: data.year && data.monthNum
+          ? `${wkFull}, ${String(d).padStart(2, '0')} ${MONTH_ID[Object.keys(MONTH_NUM).find((k) => MONTH_NUM[k] === data.monthNum)] || ''} ${data.year}`
+          : String(d).padStart(2, '0'),
+        masukSeharusnya: info?.masuk || '—',
+        pulangSeharusnya: info?.pulang || '—',
+        jenis: CODE_META[rec.code]?.label || rec.status || rec.code,
+        keterangan:
+          rec.code === 'M' ? 'Mangkir' :
+          rec.code === 'LAM' ? 'Lupa Absen Masuk' :
+          rec.code === 'LAP' ? 'Lupa Absen Pulang' :
+          rec.code === 'TSM' ? 'Salah TSM' : (rec.status || rec.code),
+      });
+    }
+  });
+  out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+  return out;
+}
+
 function deriveCode(status, masuk, shiftCode) {
   const s = (status || '').trim();
   if (s === 'Libur') return { code: 'OFF' };
@@ -634,7 +675,7 @@ function Badge({ code }) {
   return (
     <span
       className="kode-text"
-      style={{ color: meta.ink }}
+      style={{ color: meta.ink, backgroundColor: meta.bg, borderRadius: 3, padding: '1px 5px', display: 'inline-block', lineHeight: 1.3, fontWeight: 600 }}
       title={meta.label}
     >
       {meta.short}
@@ -653,10 +694,10 @@ function StatCard({ label, value, sub, tone }) {
   };
   const t = tones[tone] || tones.slate;
   return (
-    <div className="rounded-lg border p-3 text-center" style={{ backgroundColor: t.bg, borderColor: t.ring }}>
+    <div className="rounded-lg border px-3 py-1.5 text-center" style={{ backgroundColor: t.bg, borderColor: t.ring }}>
       <div className="text-[11px] font-medium" style={{ color: t.ink, opacity: 0.75 }}>{label}</div>
-      <div className="text-2xl font-semibold mt-0.5" style={{ color: t.ink, fontFamily: "'IBM Plex Mono', monospace" }}>{value}</div>
-      {sub && <div className="text-[11px] mt-0.5" style={{ color: t.ink, opacity: 0.65 }}>{sub}</div>}
+      <div className="text-lg font-semibold" style={{ color: t.ink, fontFamily: "'IBM Plex Mono', monospace" }}>{value}</div>
+      {sub && <div className="text-[10px]" style={{ color: t.ink, opacity: 0.65 }}>{sub}</div>}
     </div>
   );
 }
@@ -1038,8 +1079,8 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return data.employees;
-    return data.employees.filter((e) => e.nama.toLowerCase().includes(q) || e.nik.includes(q));
+    const list = !q ? data.employees : data.employees.filter((e) => e.nama.toLowerCase().includes(q) || e.nik.includes(q));
+    return [...list].sort((a, b) => a.nama.localeCompare(b.nama));
   }, [data.employees, query]);
 
   const selected = data.employees.find((e) => e.nik === selectedNik) || filtered[0] || data.employees[0];
@@ -1088,8 +1129,8 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
         </div>
       </div>
 
-      <div className="detail-karyawan-content flex-1 min-w-0 overflow-y-auto pr-1">
-        <div className="flex items-baseline gap-2.5 mb-4">
+      <div className="detail-karyawan-content flex-1 min-w-0 flex flex-col overflow-hidden">
+        <div className="shrink-0 flex items-baseline gap-2.5 mb-4">
           <h2 className="text-lg font-semibold text-slate-900" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>{selected.nama}</h2>
           <span className="text-xs text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{selected.nik}</span>
           <span className="text-xs text-slate-500 inline-flex items-center gap-1">
@@ -1098,7 +1139,7 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 mb-5">
+        <div className="shrink-0 grid grid-cols-3 sm:grid-cols-6 gap-2.5 mb-5">
           <StatCard label="Hadir" value={selected.totals.OK} tone="emerald" />
           <StatCard label="Telat" value={selected.totals.DT} sub={selected.totals.DT ? `${selected.totals.minutes} menit` : undefined} tone="amber" />
           <StatCard label="Sakit" value={selected.totals.S} tone="sky" />
@@ -1107,29 +1148,31 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
           <StatCard label="Total Pelanggaran" value={selected.pelanggaran} tone={selected.pelanggaran ? 'amber' : 'slate'} />
         </div>
 
-        <p className="text-[10px] font-medium text-slate-500 mb-1">Rincian harian</p>
-        <div className="rounded-lg border border-slate-200 overflow-hidden">
+        <p className="shrink-0 text-[10px] font-medium text-slate-500 mb-1">Rincian harian</p>
+        <div className="rounded-lg border border-slate-200 flex-1 min-h-0 overflow-y-auto pr-1">
           <table className="detail-harian-table w-full text-[10px] table-fixed" style={{ fontFamily: "'IBM Plex Sans', sans-serif", "--detail-row-h": `clamp(14px, calc((100vh - 250px) / ${Math.max(1, data.monthLength)}), 26px)` }}>
             <thead>
               <tr className="bg-slate-50 text-slate-500">
-                <th className="text-left px-1.5 py-0.5 font-medium">Tanggal</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Shift</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Masuk<br/>Seharusnya</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Pulang<br/>Seharusnya</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Masuk</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Pulang</th>
-                <th className="text-left px-1.5 py-0.5 font-medium">Status</th>
-                <th className="text-center px-1.5 py-0.5 font-medium">Kode</th>
+                <th className="sticky top-0 text-left px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0', width: 128 }}>Tanggal</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Shift</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Masuk<br/>Seharusnya</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Pulang<br/>Seharusnya</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Masuk</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Pulang</th>
+                <th className="sticky top-0 text-left px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Status</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Kode</th>
               </tr>
             </thead>
             <tbody>
               {Array.from({ length: data.monthLength }, (_, i) => i + 1).map((d) => {
                 const rec = selected.days[d];
-                const wk = data.year && data.monthNum ? WEEKDAY_ID[new Date(data.year, data.monthNum - 1, d).getDay()] : '';
+                const wkFull = data.year && data.monthNum ? WEEKDAY_FULL_ID[new Date(data.year, data.monthNum - 1, d).getDay()] : '';
+                const monEn = data.year && data.monthNum ? new Date(data.year, data.monthNum - 1, d).toLocaleString('en-US', { month: 'short' }) : '';
+                const yy = data.year ? String(data.year).slice(-2) : '';
                 const sInfo = rec ? shiftInfoFor(rec.shift) : null;
                 return (
                   <tr key={d} className="border-t border-slate-100">
-                    <td className="px-1.5 py-0.5 text-slate-700 truncate">{String(d).padStart(2, '0')} <span className="text-slate-400">{wk}</span></td>
+                    <td className="px-1.5 py-0.5 text-slate-700 whitespace-nowrap" style={{ width: 128 }}>{wkFull ? `${wkFull}, ${String(d).padStart(2, '0')} ${monEn} ${yy}` : String(d).padStart(2, '0')}</td>
                     <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{rec?.shift || '—'}</td>
                     <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.masuk : '—'}</td>
                     <td className="px-1.5 py-0.5 text-center text-slate-500" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{sInfo ? sInfo.pulang : '—'}</td>
@@ -1692,6 +1735,112 @@ function App() {
     return { ...data, employees: kept, totalParsed: data.employees.length, excludedCount: data.employees.length - kept.length };
   }, [data, employeeDbMap]);
 
+  const shareRekapToWhatsApp = useCallback(async () => {
+    if (!filteredData) return;
+    const violationRows = getUnexplainedViolationRows(filteredData);
+    if (violationRows.length === 0) {
+      setSyncError('Tidak ada pelanggaran yang belum dijelaskan untuk dibagikan.');
+      return;
+    }
+
+    const cols = [
+      ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
+      ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'], ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
+      ['Tanggal', 'left'], ['Jenis', 'center'], ['Keterangan', 'left'],
+    ];
+
+    const wrap = document.createElement('div');
+    wrap.style.position = 'fixed';
+    wrap.style.left = '-99999px';
+    wrap.style.top = '0';
+    wrap.style.background = '#ffffff';
+    wrap.style.padding = '18px';
+    wrap.style.width = 'max-content';
+    wrap.style.fontFamily = "'IBM Plex Sans', Arial, sans-serif";
+
+    const title = document.createElement('div');
+    title.textContent = `Rincian Pelanggaran Belum Dijelaskan — ${filteredData.monthLabelId || ''}`.trim();
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#111827;margin-bottom:10px;';
+    wrap.appendChild(title);
+
+    const table = document.createElement('table');
+    table.style.cssText = 'border-collapse:collapse;font-size:11px;color:#111827;';
+
+    const thead = document.createElement('thead');
+    const headTr = document.createElement('tr');
+    cols.forEach(([label, align]) => {
+      const th = document.createElement('th');
+      th.textContent = label;
+      th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:5px 8px;text-align:${align};white-space:nowrap;font-weight:600;`;
+      headTr.appendChild(th);
+    });
+    thead.appendChild(headTr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    violationRows.forEach((r, idx) => {
+      const tr = document.createElement('tr');
+      tr.style.background = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+      const cells = [
+        [String(idx + 1), 'center'],
+        [r.nik, 'center'],
+        [r.nama, 'left'],
+        [r.shift || '—', 'center'],
+        [r.masukSeharusnya, 'center'],
+        [r.pulangSeharusnya, 'center'],
+        [r.masuk && r.masuk !== '00:00' ? r.masuk : '—', 'center'],
+        [r.pulang && r.pulang !== '00:00' ? r.pulang : '—', 'center'],
+        [r.tanggalLabel, 'left'],
+        [r.jenis, 'center'],
+        [r.keterangan, 'left'],
+      ];
+      cells.forEach(([val, align]) => {
+        const td = document.createElement('td');
+        td.textContent = val;
+        td.style.cssText = `border:1px solid #e2e8f0;padding:4px 8px;text-align:${align};white-space:nowrap;`;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    document.body.appendChild(wrap);
+
+    let file;
+    try {
+      const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+      const fileName = `pelanggaran-belum-dijelaskan-${(filteredData.monthLabelId || 'export').replace(/\s+/g, '-').toLowerCase()}.jpg`;
+      file = new File([blob], fileName, { type: 'image/jpeg' });
+    } finally {
+      document.body.removeChild(wrap);
+    }
+    if (!file) return;
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Rincian Pelanggaran Belum Dijelaskan',
+          text: `Rincian Pelanggaran Belum Dijelaskan — ${filteredData.monthLabelId || ''}`.trim(),
+        });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback untuk browser yang tidak mendukung Web Share API dengan file (umumnya desktop):
+    // unduh JPEG-nya lalu buka WhatsApp Web supaya bisa dilampirkan manual.
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url; a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
+    window.open('https://web.whatsapp.com/', '_blank');
+    setSyncError('Berbagi langsung tidak didukung di browser ini. Gambar JPEG sudah diunduh - lampirkan manual di WhatsApp Web yang baru dibuka.');
+  }, [filteredData]);
+
   const persistEmployeeDb = useCallback((next) => {
     localCache.set('lhpk:employee-db', JSON.stringify(next));
     if (sheetsApi.configured()) {
@@ -1850,13 +1999,13 @@ function App() {
                   <>
                     <button onClick={() => window.location.reload()}
                       className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                      style={{ backgroundColor:'#fff',color:'#374151' }}>
+                      style={{ backgroundColor:'#ffd100',color:'#fff' }}>
                       <RefreshCw size={15}/> REFRESH
                     </button>
-                    <button onClick={() => document.querySelector('[data-download-csv]')?.click()}
+                    <button onClick={shareRekapToWhatsApp}
                       className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                      style={{ backgroundColor:'#ffd100',color:'#111827' }}>
-                      <Download size={15}/> EXPORT
+                      style={{ backgroundColor:'#25D366',color:'#fff' }}>
+                      <WhatsAppIcon size={15} color="#fff"/> WHATSAPP
                     </button>
                     <button onClick={() => setShowAdminMenu(true)} title="Menu admin" aria-label="Menu admin"
                       className="inline-flex items-center justify-center">
