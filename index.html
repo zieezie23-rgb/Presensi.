@@ -1328,6 +1328,10 @@ const ADMIN_TABS = [
   { id: 'database', label: 'DATABASE', icon: Database },
 ];
 
+const TAB_LABELS = Object.fromEntries(
+  [...NAV_TABS, ...ADMIN_TABS].map((t) => [t.id, t.label])
+);
+
 function PolaShiftTab() {
   const scrollRef = useRef(null);
   const [rows, setRows] = useState(() => Object.entries(normalizeShiftTable(SHIFT_TABLE)).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
@@ -1825,7 +1829,7 @@ function App() {
           <img src={LOGO_IMG} alt="Indomaret" style={{ width: 125, height: 'auto', objectFit: 'contain' }} />
         </button>
         <div className="idm-brand-title">
-          <h1>REKAP PRESENSI</h1>
+          <h1>{tab === 'rekap' ? 'REKAP PRESENSI' : (TAB_LABELS[tab] || 'REKAP PRESENSI')}</h1>
           <p>{data ? (data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
         </div>
         {uploadSuccess && (
