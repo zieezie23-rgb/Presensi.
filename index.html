@@ -300,7 +300,7 @@ button.text-white{background-color:var(--idm-red)!important}
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
-const { BarChart, Bar, LineChart, Line, Legend, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } = Recharts;
+const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } = Recharts;
 
 /* ---------------------------------------------------------------------- */
 /*  Minimal inline icon set (replaces lucide-react for CDN use)            */
@@ -323,7 +323,6 @@ function makeIcon(paths) {
 const Upload = makeIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>);
 const Users = makeIcon(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>);
 const Clock = makeIcon(<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>);
-const ChartIcon = makeIcon(<><line x1="4" y1="19" x2="4" y2="10" /><line x1="10" y1="19" x2="10" y2="5" /><line x1="16" y1="19" x2="16" y2="8" /><line x1="22" y1="19" x2="22" y2="3" /></>);
 const AlertTriangle = makeIcon(<><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></>);
 const ChevronLeft = makeIcon(<polyline points="15 18 9 12 15 6" />);
 const Search = makeIcon(<><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>);
@@ -1448,15 +1447,15 @@ function AnalisisTab({ periods, employeeDbMap }) {
         const out = results.filter(x => x.data).map(({period, data}) => {
           const emps = (data.employees || []).filter(e => !employeeDbMap || employeeDbMap[e.nik]);
           const totals = emps.reduce((a, e) => {
-            a.DT += Number(e.totals?.DT || 0);
-            a.LAM += Number(e.totals?.LAM || 0);
-            a.LAP += Number(e.totals?.LAP || 0);
-            a.M += Number(e.totals?.M || 0);
-            a.TSM += Number(e.totals?.TSM || 0);
+            a.pelanggaran += Number(e.pelanggaran || 0);
+            a.hadir += Number(e.totals?.OK || 0);
+            a.off += Number(e.totals?.OFF || 0);
+            a.sakit += Number(e.totals?.S || 0);
+            a.cuti += Number(e.totals?.C || 0);
+            a.idt += Number(e.totals?.IDT || 0);
             return a;
-          }, { DT:0, LAM:0, LAP:0, M:0, TSM:0 });
-          const pelanggaran = totals.DT + totals.LAM + totals.LAP + totals.M + totals.TSM;
-          return { period, label: formatPeriodLabel(period), employees: emps.length, pelanggaran, ...totals };
+          }, { pelanggaran:0, hadir:0, off:0, sakit:0, cuti:0, idt:0 });
+          return { period, label: formatPeriodLabel(period), employees: emps.length, ...totals };
         });
         setRows(out);
       } catch (e) {
@@ -1466,8 +1465,8 @@ function AnalisisTab({ periods, employeeDbMap }) {
     return () => { alive = false; };
   }, [periods, employeeDbMap]);
 
-  const totalViolation = rows.reduce((n,r) => n + r.pelanggaran, 0);
   const maxRow = rows.reduce((best, r) => !best || r.pelanggaran > best.pelanggaran ? r : best, null);
+  const totalViolation = rows.reduce((n,r) => n + r.pelanggaran, 0);
   const avgViolation = rows.length ? Math.round(totalViolation / rows.length) : 0;
 
   if (loading) return <div className="analysis-state">Memuat analisis bulanan...</div>;
@@ -1478,8 +1477,8 @@ function AnalisisTab({ periods, employeeDbMap }) {
     <div className="analysis-page">
       <div className="analysis-intro">
         <div>
-          <div className="analysis-title"><ChartIcon size={17}/> ANALISIS PELANGGARAN BULANAN</div>
-          <div className="analysis-subtitle">Tren setiap jenis pelanggaran dalam satu grafik berdasarkan seluruh periode yang tersedia.</div>
+          <div className="analysis-title"><ChartIcon size={17}/> ANALISIS PRESENSI BULANAN</div>
+          <div className="analysis-subtitle">Perbandingan data presensi dan pelanggaran dari seluruh periode yang tersedia.</div>
         </div>
         <div className="analysis-range">{formatPeriodLabel(rows[0].period)} — {formatPeriodLabel(rows[rows.length - 1].period)}</div>
       </div>
@@ -1491,24 +1490,36 @@ function AnalisisTab({ periods, employeeDbMap }) {
         <div className="analysis-kpi"><span>Periode Dianalisis</span><strong>{rows.length}</strong></div>
       </div>
 
-      <div className="analysis-grid" style={{gridTemplateColumns:'1fr'}}>
+      <div className="analysis-grid">
         <div className="analysis-card">
-          <div className="analysis-card-head">
-            <div><b>Tren Pelanggaran per Jenis</b><small>Seluruh jenis pelanggaran ditampilkan dalam satu grafik</small></div>
-          </div>
-          <div className="analysis-chart" style={{height:330}}><ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rows} margin={{ top: 8, right: 18, left: -12, bottom: 0 }}>
+          <div className="analysis-card-head"><div><b>Tren Pelanggaran</b><small>Total pelanggaran per bulan</small></div></div>
+          <div className="analysis-chart"><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{fontSize:10}} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} tick={{fontSize:10}} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v, name) => [v, name]} labelFormatter={(v) => v} />
-              <Legend wrapperStyle={{fontSize:'10px', paddingTop:'4px'}} />
-              <Line type="monotone" dataKey="DT" name="DT" stroke="#005baa" strokeWidth={2} dot={{r:2}} activeDot={{r:4}} />
-              <Line type="monotone" dataKey="LAM" name="LAM" stroke="#e30613" strokeWidth={2} dot={{r:2}} activeDot={{r:4}} />
-              <Line type="monotone" dataKey="LAP" name="LAP" stroke="#f59e0b" strokeWidth={2} dot={{r:2}} activeDot={{r:4}} />
-              <Line type="monotone" dataKey="M" name="M" stroke="#16a34a" strokeWidth={2} dot={{r:2}} activeDot={{r:4}} />
-              <Line type="monotone" dataKey="TSM" name="TSM" stroke="#7c3aed" strokeWidth={2} dot={{r:2}} activeDot={{r:4}} />
-            </LineChart>
+              <Tooltip formatter={(v) => [v, 'Pelanggaran']} labelFormatter={(v) => v} />
+              <Bar dataKey="pelanggaran" radius={[3,3,0,0]}>
+                {rows.map((r,i) => <Cell key={i} fill={r.period === maxRow?.period ? '#e30613' : '#005baa'} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer></div>
+        </div>
+
+        <div className="analysis-card">
+          <div className="analysis-card-head"><div><b>Status Presensi</b><small>Jumlah status per bulan</small></div></div>
+          <div className="analysis-chart"><ResponsiveContainer width="100%" height="100%">
+            <BarChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="label" tick={{fontSize:10}} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{fontSize:10}} tickLine={false} axisLine={false} />
+              <Tooltip />
+              <Bar dataKey="hadir" name="Hadir" stackId="a" fill="#005baa" />
+              <Bar dataKey="off" name="Off" stackId="a" fill="#94a3b8" />
+              <Bar dataKey="sakit" name="Sakit" stackId="a" fill="#f59e0b" />
+              <Bar dataKey="cuti" name="Cuti" stackId="a" fill="#16a34a" />
+              <Bar dataKey="idt" name="IDT" stackId="a" fill="#e30613" radius={[3,3,0,0]} />
+            </BarChart>
           </ResponsiveContainer></div>
         </div>
       </div>
