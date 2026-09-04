@@ -92,11 +92,18 @@ button{transition:all .16s ease}
 .idm-brand-title p{margin:2px 0 0;font-size:10px;font-weight:500}
 .idm-top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
 .idm-top-actions button{border:0!important;box-shadow:none!important}
+.idm-top-actions .btn-upload-lhpk{background-color:#005baa!important;color:#fff!important}
+.idm-top-actions .btn-refresh{background-color:#005baa!important;color:#fff!important}
+.idm-top-actions .btn-export{background-color:#ffd100!important;color:#fff!important}
+.idm-top-actions .btn-upload-lhpk:hover{background-color:#004b8f!important}
+.idm-top-actions .btn-refresh:hover{background-color:#004b8f!important}
+.idm-top-actions .btn-export:hover{background-color:#e6bc00!important}
 .idm-nav{height:34px;background:#fff;border-bottom:1px solid #d7dde5;display:flex;align-items:stretch;padding:0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}
 .idm-nav button{position:relative;background:transparent!important;border:0!important;color:#626b78!important;height:34px;padding:0 12px!important;border-radius:0!important;transform:none!important;font-size:9px!important;font-weight:600!important}
 .idm-nav button:hover{color:var(--idm-red)!important}
 .idm-nav button.idm-active{color:var(--idm-red)!important}
 .idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--idm-red);border-radius:4px 4px 0 0}
+.admin-menu-item{transition:background-color .15s ease,color .15s ease,transform .15s ease}.admin-menu-item:hover{background:#f5f8fc!important;color:#005baa!important;transform:translateX(2px)}
 .idm-content{max-width:none;width:100%;margin:0;padding:7px 10px 10px}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
 .idm-period strong{color:#1f2937;font-size:13px}
@@ -541,7 +548,7 @@ function getUnexplainedViolationRows(data) {
       });
     }
   });
-  out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+  out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
   return out;
 }
 
@@ -985,7 +992,7 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
         });
       }
     });
-    out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+    out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
     return out;
   }, [data]);
 
@@ -999,7 +1006,7 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
         out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d, masukSeharusnya: info?.masuk || '—', pulangSeharusnya: info?.pulang || '—' });
       }
     });
-    out.sort((a, b) => a.day - b.day || a.nik.localeCompare(b.nik));
+    out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
     return out;
   }, [data]);
 
@@ -1566,7 +1573,7 @@ function SideMenu({ tab, onSelect, onClose }) {
             return (
               <button
                 key={t.id}
-                onClick={() => { onSelect(t.id); onClose(); }}
+                onClick={() => { if (t.id === 'database') { onClose(); setTimeout(() => { if (typeof openDatabaseSpreadsheetUrl === 'function') openDatabaseSpreadsheetUrl(); }, 0); return; } onSelect(t.id); onClose(); }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs font-semibold"
                 style={{
                   color: active ? '#005baa' : '#374151',
@@ -1600,7 +1607,7 @@ function AdminMenu({ tab, onSelect, onClose }) {
               <button
                 key={t.id}
                 onClick={() => { onSelect(t.id); onClose(); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-xs font-semibold"
+                className="admin-menu-item w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-xs font-semibold"
                 style={{
                   color: active ? '#005baa' : '#374151',
                   backgroundColor: active ? '#eaf3fc' : 'transparent',
@@ -2185,23 +2192,23 @@ function App() {
                 <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
                 <button onClick={() => fileInputRef.current?.click()} disabled={busy}
-                  className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-                  style={{ backgroundColor:'#005baa' }}>
+                  className="btn-upload-lhpk inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                  style={{ backgroundColor:'#e30613', color:'#fff' }}>
                   {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD LHPK
                 </button>
                 {data && (
                   <>
                     <button onClick={() => window.location.reload()}
-                      className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold"
-                      style={{ backgroundColor:'#ffd100',color:'#fff' }}>
+                      className="btn-refresh inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                      style={{ backgroundColor:'#005baa',color:'#fff' }}>
                       <RefreshCw size={15}/> REFRESH
                     </button>
                     <div className="relative">
                       <button
                         onClick={() => setShowExportMenu((v) => !v)}
                         disabled={busy}
-                        className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-                        style={{ backgroundColor:'#005baa',color:'#fff' }}
+                        className="btn-export inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
+                        style={{ backgroundColor:'#ffd100',color:'#fff' }}
                         title="Export rekap"
                       >
                         <Download size={15}/> EXPORT
