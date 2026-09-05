@@ -2631,7 +2631,7 @@ function App() {
       const headTr = document.createElement('tr');
       cols.forEach(([label, align]) => {
         const th = document.createElement('th');
-        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:11px 8px;text-align:${align};white-space:nowrap;font-weight:600;line-height:1.15;box-sizing:border-box;`;
+        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:8px 8px 14px;text-align:${align};white-space:nowrap;font-weight:600;line-height:1.15;box-sizing:border-box;`;
         th.textContent = label;
         headTr.appendChild(th);
       });
@@ -2655,7 +2655,7 @@ function App() {
         ];
         cells.forEach(([val, align]) => {
           const td = document.createElement('td');
-          td.style.cssText = `border:1px solid #cbd5e1;padding:10px 8px;text-align:${align};white-space:nowrap;background:#fff;line-height:1.15;box-sizing:border-box;`;
+          td.style.cssText = `border:1px solid #cbd5e1;padding:7px 8px 13px;text-align:${align};white-space:nowrap;background:#fff;line-height:1.15;box-sizing:border-box;`;
           td.textContent = val == null ? '' : String(val);
           tr.appendChild(td);
         });
