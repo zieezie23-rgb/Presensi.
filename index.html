@@ -45,6 +45,9 @@ button{transition:all .16s ease}
 .idm-nav button.idm-active{color:var(--idm-red)!important}
 .idm-nav button.idm-active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;background:var(--idm-red);border-radius:4px 4px 0 0}
 .admin-menu-item{transition:background-color .15s ease,color .15s ease,transform .15s ease}.admin-menu-item:hover{background:#f5f8fc!important;color:#005baa!important;transform:translateX(2px)}
+.export-menu-item{cursor:pointer;transition:background-color .15s ease,color .15s ease,padding-left .15s ease}
+.export-menu-item:hover{background-color:#f0f7ff!important;color:var(--idm-blue)!important;padding-left:16px}
+.export-menu-item:active{background-color:#e3effc!important}
 .admin-menu-featured{margin-bottom:3px!important;font-weight:800!important;position:relative}.admin-menu-featured:after{content:'ANALISIS';margin-left:auto;font-size:8px;letter-spacing:.5px;padding:2px 5px;border-radius:4px;background:#e30613;color:#fff}.analysis-page{width:100%;padding:2px 0 8px}.analysis-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #dfe5ec;border-left:4px solid #e30613;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05)}.analysis-title{display:flex;align-items:center;gap:7px;color:#005baa;font-size:13px;font-weight:800}.analysis-subtitle{margin-top:3px;color:#7b8491;font-size:10px}.analysis-range{font-size:10px;font-weight:700;color:#64748b;white-space:nowrap}.analysis-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}.analysis-kpi{padding:9px 11px;border:1px solid #e0e5eb;border-radius:7px;background:#fff}.analysis-kpi span{display:block;color:#7b8491;font-size:9px;font-weight:600}.analysis-kpi strong{display:block;margin-top:3px;color:#1f2937;font-size:16px;font-weight:800}.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.analysis-card{min-width:0;border:1px solid #dfe5ec;border-radius:7px;background:#fff;overflow:hidden}.analysis-card-head{padding:8px 11px;border-bottom:1px solid #edf0f3}.analysis-card-head b{display:block;color:#374151;font-size:11px}.analysis-card-head small{display:block;margin-top:2px;color:#8a93a0;font-size:9px}.analysis-chart{height:260px;padding:5px 8px 8px}.analysis-state{padding:45px 20px;text-align:center;color:#7b8491;font-size:12px}.analysis-error{color:#b91c1c}@media(max-width:760px){.analysis-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.analysis-grid{grid-template-columns:1fr}.analysis-range{display:none}.analysis-chart{height:230px}}
 .idm-content{max-width:none;width:100%;margin:0;padding:7px 10px 10px}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
@@ -2472,7 +2475,7 @@ function App() {
                 <button onClick={() => fileInputRef.current?.click()} disabled={busy}
                   className="btn-upload-lhpk inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
                   style={{ backgroundColor:'#e30613', color:'#fff' }}>
-                  {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD<span className="idm-btn-sub"> LHPK</span>
+                  {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD
                 </button>
                 {data && (
                   <>
@@ -2493,9 +2496,9 @@ function App() {
                       </button>
                       {showExportMenu && (
                         <div className="absolute right-0 mt-1 z-50 rounded-md border border-slate-200 bg-white shadow-lg overflow-hidden" style={{ minWidth: 145 }}>
-                          <button onClick={() => handleExport('pdf')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">PDF</button>
-                          <button onClick={() => handleExport('excel')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Excel</button>
-                          <button onClick={() => handleExport('jpeg')} className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">JPEG</button>
+                          <button onClick={() => handleExport('pdf')} className="export-menu-item w-full text-left px-3 py-2 text-xs font-semibold text-slate-700">PDF</button>
+                          <button onClick={() => handleExport('excel')} className="export-menu-item w-full text-left px-3 py-2 text-xs font-semibold text-slate-700">Excel</button>
+                          <button onClick={() => handleExport('jpeg')} className="export-menu-item w-full text-left px-3 py-2 text-xs font-semibold text-slate-700">JPEG</button>
                         </div>
                       )}
                     </div>
