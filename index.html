@@ -59,7 +59,7 @@ button{transition:all .16s ease}
 .export-menu-item{cursor:pointer;transition:background-color .15s ease,color .15s ease,padding-left .15s ease}
 .export-menu-item:hover{background-color:#f0f7ff!important;color:var(--idm-blue)!important;padding-left:16px}
 .export-menu-item:active{background-color:#e3effc!important}
-.admin-menu-featured{margin-bottom:3px!important;font-weight:800!important;position:relative}.admin-menu-featured:after{content:'ANALISIS';margin-left:auto;font-size:8px;letter-spacing:.5px;padding:2px 5px;border-radius:4px;background:#e30613;color:#fff}.analysis-page{width:100%;padding:2px 0 8px}.analysis-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #dfe5ec;border-left:4px solid #e30613;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05)}.analysis-title{display:flex;align-items:center;gap:7px;color:#005baa;font-size:13px;font-weight:800}.analysis-subtitle{margin-top:3px;color:#7b8491;font-size:10px}.analysis-range{font-size:10px;font-weight:700;color:#64748b;white-space:nowrap}.analysis-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}.analysis-kpi{padding:9px 11px;border:1px solid #e0e5eb;border-radius:7px;background:#fff}.analysis-kpi span{display:block;color:#7b8491;font-size:9px;font-weight:600}.analysis-kpi strong{display:block;margin-top:3px;color:#1f2937;font-size:16px;font-weight:800}.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.analysis-card{min-width:0;border:1px solid #dfe5ec;border-radius:7px;background:#fff;overflow:hidden}.analysis-card-head{padding:8px 11px;border-bottom:1px solid #edf0f3}.analysis-card-head b{display:block;color:#374151;font-size:11px}.analysis-card-head small{display:block;margin-top:2px;color:#8a93a0;font-size:9px}.analysis-chart{height:260px;padding:5px 8px 8px}.analysis-state{padding:45px 20px;text-align:center;color:#7b8491;font-size:12px}.analysis-error{color:#b91c1c}@media(max-width:760px){.analysis-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.analysis-grid{grid-template-columns:1fr}.analysis-range{display:none}.analysis-chart{height:230px}}
+.admin-menu-featured{margin-bottom:3px!important;font-weight:800!important;position:relative}.admin-menu-featured:after{content:'ANALISIS';margin-left:auto;font-size:8px;letter-spacing:.5px;padding:2px 5px;border-radius:4px;background:#e30613;color:#fff}.analysis-page{width:100%;padding:2px 0 8px}.analysis-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #dfe5ec;border-left:4px solid #e30613;border-radius:7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05)}.analysis-title{display:flex;align-items:center;gap:7px;color:#005baa;font-size:13px;font-weight:800}.analysis-subtitle{margin-top:3px;color:#7b8491;font-size:10px}.analysis-range{font-size:10px;font-weight:700;color:#64748b;white-space:nowrap}.analysis-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:8px}.analysis-kpi{padding:9px 11px;border:1px solid #e0e5eb;border-radius:7px;background:#fff}.analysis-kpi span{display:block;color:#7b8491;font-size:9px;font-weight:600}.analysis-kpi strong{display:block;margin-top:3px;color:#1f2937;font-size:16px;font-weight:800}.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.analysis-card{min-width:0;border:1px solid #dfe5ec;border-radius:7px;background:#fff;overflow:hidden}.analysis-card-head{padding:8px 11px;border-bottom:1px solid #edf0f3}.analysis-card-head b{display:block;color:#374151;font-size:11px}.analysis-card-head small{display:block;margin-top:2px;color:#8a93a0;font-size:9px}.analysis-chart{height:260px;padding:5px 8px 8px}.analysis-state{padding:45px 20px;text-align:center;color:#7b8491;font-size:12px}.analysis-error{color:#b91c1c}@media(max-width:760px){.analysis-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.analysis-grid{grid-template-columns:1fr}.analysis-range{display:none}.analysis-chart{height:230px}}
 .idm-content{max-width:none;width:100%;margin:0;padding:7px 10px 10px}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
 .idm-period strong{color:#1f2937;font-size:13px}
@@ -234,11 +234,9 @@ button{transition:all .16s ease}
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
-  display: flex;
-  justify-content: center;
   --rekap-row-h: clamp(10px, calc((100vh - 190px) / max(1, var(--rekap-row-count))), 24px);
 }
-.rekap-table-wrap table { min-width: max-content; }
+.rekap-table-wrap table { min-width: max-content; margin: 0 auto; }
 .rekap-legend {
   text-align: center !important;
   font-size: 10px !important;
@@ -254,7 +252,7 @@ button{transition:all .16s ease}
   vertical-align: middle !important;
   box-sizing: border-box;
 }
-.pelanggaran-table tbody td { height: 28px; }
+.pelanggaran-table tbody td { height: 28px; white-space: nowrap; }
 .pelanggaran-table thead th { height: 34px; line-height: 16px !important; }
 .pelanggaran-table input {
   font-size: 13px !important;
@@ -306,7 +304,9 @@ button{transition:all .16s ease}
 @media (max-width: 900px) {
   .idm-brandbar { min-height: 40px !important; padding: 6px 8px !important; }
   .idm-logo { width: 74px; height: 26px; border-width: 2px; }
-  .idm-logo:before { font-size: 8px; padding: 1px 5px; border-width: 1px; }
+  .idm-logo:before { font-size: 20px; padding: 1px 5px; border-width: 1px; }
+  .idm-draglogo-wrap { width: 150px !important; }
+  .idm-draglogo-img { width: 150px !important; }
   .idm-brand-title { margin-left: 6px; }
   .idm-brand-title h1 { font-size: 11px; }
   .idm-brand-title p { font-size: 7px; }
@@ -320,8 +320,15 @@ button{transition:all .16s ease}
   .idm-btn-sub { display: none; }
   .idm-top-actions button[aria-label="Menu admin"] svg,
   .idm-top-actions button[aria-label="Kembali ke halaman utama"] svg { width: 18px !important; height: 18px !important; }
-  .rekap-table-wrap { justify-content: flex-start !important; }
 }
+
+.analysis-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.analysis-table th,.analysis-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:center;width:16.6666%}
+.analysis-table thead th{color:#fff;font-size:11px;font-weight:600;background:var(--idm-navy);height:65px;vertical-align:middle}
+.analysis-table tbody td:first-child,.analysis-table tfoot td:first-child{color:#374151;font-size:11px;font-weight:600;white-space:nowrap}
+.analysis-table tbody td{font-size:11px;font-weight:600;color:#1f2937;white-space:nowrap}
+.analysis-table tbody tr:nth-child(even){background:#f8fafc}
+.analysis-table tfoot td{font-size:11px;font-weight:600;color:var(--idm-navy);background:#eaf2fc;white-space:nowrap}
 
 /* common UI */
 .rounded-lg,.rounded-2xl{box-shadow:0 2px 8px rgba(31,41,55,.06)}
@@ -335,7 +342,7 @@ button.text-white{background-color:var(--idm-red)!important}
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
-const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } = Recharts;
+const { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Cell } = Recharts;
 
 /* ---------------------------------------------------------------------- */
 /*  Minimal inline icon set (replaces lucide-react for CDN use)            */
@@ -1091,7 +1098,7 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
             <tr className="bg-blue-700 text-white">
               {[
                 ['No','text-center'], ['NIK','text-center'], ['Nama','text-left'], ['Shift','text-center'],
-                ['Masuk Seharusnya','text-center'], ['Pulang Seharusnya','text-center'], ['Masuk Aktual','text-center'], ['Pulang Aktual','text-center'],
+                ['Masuk TSM','text-center'], ['Pulang TSM','text-center'], ['Masuk Aktual','text-center'], ['Pulang Aktual','text-center'],
                 ['Tanggal','text-center'], ['Jenis','text-center'], ['Keterangan','text-left'], ['Penjelasan Karyawan','text-left'], ['Aksi','text-center']
               ].map(([h, align]) => (
                 <th key={h} className={`sticky top-0 z-10 bg-blue-700 ${align} px-1.5 py-1 font-semibold whitespace-nowrap border border-blue-500`}>
@@ -1109,9 +1116,9 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
 
       <div className="mb-2 mt-6 text-xs text-slate-500">{explainedRows.length} pelanggaran sudah dijelaskan</div>
       <div className="rounded-lg border border-slate-300 overflow-auto" style={{maxHeight:'70vh'}}>
-        <table className="w-full text-[10px] border-collapse">
+        <table className="w-full text-[13px] border-collapse pelanggaran-table" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
           <thead><tr style={{ backgroundColor: 'var(--idm-navy)' }} className="text-white">
-            {['No','NIK','Nama','Shift','Masuk Seharusnya','Pulang Seharusnya','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} style={{ backgroundColor: 'var(--idm-navy)', borderColor: '#0a5cc4' }} className={`sticky top-0 px-1.5 py-1 border font-semibold ${i===2||i===10?'text-left':'text-center'} whitespace-nowrap`}>{h}</th>)}
+            {['No','NIK','Nama','Shift','Masuk TSM','Pulang TSM','Masuk Aktual','Pulang Aktual','Tanggal','Jenis','Penjelasan Karyawan'].map((h,i)=><th key={h} style={{ backgroundColor: 'var(--idm-navy)', borderColor: '#0a5cc4' }} className={`sticky top-0 px-1.5 py-1 border font-semibold ${i===2||i===10?'text-left':'text-center'}`}>{h.includes(' ') ? h.split(' ').map((w, wi) => <React.Fragment key={wi}>{wi > 0 && <br />}{w}</React.Fragment>) : h}</th>)}
           </tr></thead>
           <tbody>
             {explainedRows.map((r,i)=><tr key={`${r.nik}-${r.day}`} className={i%2===0?'bg-white':'bg-slate-50'}>
@@ -1273,8 +1280,8 @@ function DetailTab({ data, selectedNik, onSelectEmployee }) {
               <tr className="bg-slate-50 text-slate-500">
                 <th className="sticky top-0 left-0 text-left px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 3, boxShadow: '0 1px 0 0 #e2e8f0' }}>Tanggal</th>
                 <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Shift</th>
-                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Masuk<br/>Seharusnya</th>
-                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Pulang<br/>Seharusnya</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Masuk<br/>TSM</th>
+                <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Pulang<br/>TSM</th>
                 <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Masuk</th>
                 <th className="sticky top-0 text-center px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Pulang</th>
                 <th className="sticky top-0 text-left px-1.5 py-0.5 font-medium" style={{ backgroundColor: '#f8fafc', zIndex: 2, boxShadow: '0 1px 0 0 #e2e8f0' }}>Status</th>
@@ -1514,14 +1521,19 @@ function AnalisisTab({ periods, employeeDbMap }) {
           const emps = (data.employees || []).filter(e => !employeeDbMap || employeeDbMap[e.nik]);
           const totals = emps.reduce((a, e) => {
             a.pelanggaran += Number(e.pelanggaran || 0);
+            a.dt += Number(e.totals?.DT || 0);
+            a.lam += Number(e.totals?.LAM || 0);
+            a.lap += Number(e.totals?.LAP || 0);
+            a.m += Number(e.totals?.M || 0);
+            a.tsm += Number(e.totals?.TSM || 0);
             a.hadir += Number(e.totals?.OK || 0);
             a.off += Number(e.totals?.OFF || 0);
             a.sakit += Number(e.totals?.S || 0);
             a.cuti += Number(e.totals?.C || 0);
             a.idt += Number(e.totals?.IDT || 0);
             return a;
-          }, { pelanggaran:0, hadir:0, off:0, sakit:0, cuti:0, idt:0 });
-          return { period, label: formatPeriodLabel(period), employees: emps.length, ...totals };
+          }, { pelanggaran:0, dt:0, lam:0, lap:0, m:0, tsm:0, hadir:0, off:0, sakit:0, cuti:0, idt:0 });
+          return { period, label: formatPeriodLabel(period), labelShort: formatPeriodShort(period), employees: emps.length, ...totals };
         });
         setRows(out);
       } catch (e) {
@@ -1532,8 +1544,16 @@ function AnalisisTab({ periods, employeeDbMap }) {
   }, [periods, employeeDbMap]);
 
   const maxRow = rows.reduce((best, r) => !best || r.pelanggaran > best.pelanggaran ? r : best, null);
-  const totalViolation = rows.reduce((n,r) => n + r.pelanggaran, 0);
-  const avgViolation = rows.length ? Math.round(totalViolation / rows.length) : 0;
+  const totalDT = rows.reduce((n,r) => n + r.dt, 0);
+  const totalLAM = rows.reduce((n,r) => n + r.lam, 0);
+  const totalLAP = rows.reduce((n,r) => n + r.lap, 0);
+  const totalM = rows.reduce((n,r) => n + r.m, 0);
+  const totalTSM = rows.reduce((n,r) => n + r.tsm, 0);
+  const totalHadir = rows.reduce((n,r) => n + r.hadir, 0);
+  const totalOff = rows.reduce((n,r) => n + r.off, 0);
+  const totalSakit = rows.reduce((n,r) => n + r.sakit, 0);
+  const totalCuti = rows.reduce((n,r) => n + r.cuti, 0);
+  const totalIdt = rows.reduce((n,r) => n + r.idt, 0);
 
   if (loading) return <div className="analysis-state">Memuat analisis bulanan...</div>;
   if (err) return <div className="analysis-state analysis-error">{err}</div>;
@@ -1549,43 +1569,138 @@ function AnalisisTab({ periods, employeeDbMap }) {
         <div className="analysis-range">{formatPeriodLabel(rows[0].period)} — {formatPeriodLabel(rows[rows.length - 1].period)}</div>
       </div>
 
-      <div className="analysis-kpis">
-        <div className="analysis-kpi"><span>Total Pelanggaran</span><strong>{totalViolation}</strong></div>
-        <div className="analysis-kpi"><span>Rata-rata / Bulan</span><strong>{avgViolation}</strong></div>
-        <div className="analysis-kpi"><span>Bulan Tertinggi</span><strong>{maxRow?.label || '-'}</strong></div>
-        <div className="analysis-kpi"><span>Periode Dianalisis</span><strong>{rows.length}</strong></div>
-      </div>
-
       <div className="analysis-grid">
         <div className="analysis-card">
-          <div className="analysis-card-head"><div><b>Tren Pelanggaran</b><small>Total pelanggaran per bulan</small></div></div>
+          <div className="analysis-card-head"><div><b>Rekap Pelanggaran Per Bulan</b><small>Jumlah per jenis pelanggaran, per bulan, dengan total dan rata-rata</small></div></div>
+          <div style={{ overflowX: 'auto', padding: '8px 11px 11px' }}>
+            <table className="analysis-table">
+              <thead>
+                <tr>
+                  <th>Bulan</th>
+                  <th>Datang Terlambat</th>
+                  <th>Lupa Absen Masuk</th>
+                  <th>Lupa Absen Pulang</th>
+                  <th>Mangkir</th>
+                  <th>Salah TSM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.period}>
+                    <td>{r.labelShort}</td>
+                    <td>{r.dt}</td>
+                    <td>{r.lam}</td>
+                    <td>{r.lap}</td>
+                    <td>{r.m}</td>
+                    <td>{r.tsm}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td>{totalDT}</td>
+                  <td>{totalLAM}</td>
+                  <td>{totalLAP}</td>
+                  <td>{totalM}</td>
+                  <td>{totalTSM}</td>
+                </tr>
+                <tr>
+                  <td>AVG/Bulan</td>
+                  <td>{(totalDT / rows.length).toFixed(1)}</td>
+                  <td>{(totalLAM / rows.length).toFixed(1)}</td>
+                  <td>{(totalLAP / rows.length).toFixed(1)}</td>
+                  <td>{(totalM / rows.length).toFixed(1)}</td>
+                  <td>{(totalTSM / rows.length).toFixed(1)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div className="analysis-card">
+          <div className="analysis-card-head"><div><b>Rekap Status Presensi Per Bulan</b><small>Jumlah per status presensi, per bulan, dengan total dan rata-rata</small></div></div>
+          <div style={{ overflowX: 'auto', padding: '8px 11px 11px' }}>
+            <table className="analysis-table">
+              <thead>
+                <tr>
+                  <th>Bulan</th>
+                  <th>Hadir</th>
+                  <th>Off</th>
+                  <th>Sakit</th>
+                  <th>Cuti</th>
+                  <th>IDT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.period}>
+                    <td>{r.labelShort}</td>
+                    <td>{r.hadir}</td>
+                    <td>{r.off}</td>
+                    <td>{r.sakit}</td>
+                    <td>{r.cuti}</td>
+                    <td>{r.idt}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td>{totalHadir}</td>
+                  <td>{totalOff}</td>
+                  <td>{totalSakit}</td>
+                  <td>{totalCuti}</td>
+                  <td>{totalIdt}</td>
+                </tr>
+                <tr>
+                  <td>AVG/Bulan</td>
+                  <td>{(totalHadir / rows.length).toFixed(1)}</td>
+                  <td>{(totalOff / rows.length).toFixed(1)}</td>
+                  <td>{(totalSakit / rows.length).toFixed(1)}</td>
+                  <td>{(totalCuti / rows.length).toFixed(1)}</td>
+                  <td>{(totalIdt / rows.length).toFixed(1)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="analysis-grid" style={{ marginTop: 8 }}>
+        <div className="analysis-card">
+          <div className="analysis-card-head"><div><b>Tren Pelanggaran</b><small>Jumlah per jenis pelanggaran, per bulan</small></div></div>
           <div className="analysis-chart"><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
+            <LineChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{fontSize:10}} tickLine={false} axisLine={false} />
+              <XAxis dataKey="labelShort" tick={{fontSize:10}} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} tick={{fontSize:10}} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v) => [v, 'Pelanggaran']} labelFormatter={(v) => v} />
-              <Bar dataKey="pelanggaran" radius={[3,3,0,0]}>
-                {rows.map((r,i) => <Cell key={i} fill={r.period === maxRow?.period ? '#e30613' : '#005baa'} />)}
-              </Bar>
-            </BarChart>
+              <Tooltip labelFormatter={(v, p) => p?.[0]?.payload?.label || v} />
+              <Legend wrapperStyle={{fontSize:10}} />
+              <Line type="monotone" dataKey="dt" name="Datang Terlambat" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="lam" name="Lupa Absen Masuk" stroke="#005baa" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="lap" name="Lupa Absen Pulang" stroke="#0ea5e9" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="m" name="Mangkir" stroke="#e30613" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="tsm" name="Salah TSM" stroke="#7c3aed" strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
           </ResponsiveContainer></div>
         </div>
 
         <div className="analysis-card">
           <div className="analysis-card-head"><div><b>Status Presensi</b><small>Jumlah status per bulan</small></div></div>
           <div className="analysis-chart"><ResponsiveContainer width="100%" height="100%">
-            <BarChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
+            <LineChart data={rows} margin={{ top: 8, right: 10, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{fontSize:10}} tickLine={false} axisLine={false} />
+              <XAxis dataKey="labelShort" tick={{fontSize:10}} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} tick={{fontSize:10}} tickLine={false} axisLine={false} />
-              <Tooltip />
-              <Bar dataKey="hadir" name="Hadir" stackId="a" fill="#005baa" />
-              <Bar dataKey="off" name="Off" stackId="a" fill="#94a3b8" />
-              <Bar dataKey="sakit" name="Sakit" stackId="a" fill="#f59e0b" />
-              <Bar dataKey="cuti" name="Cuti" stackId="a" fill="#16a34a" />
-              <Bar dataKey="idt" name="IDT" stackId="a" fill="#e30613" radius={[3,3,0,0]} />
-            </BarChart>
+              <Tooltip labelFormatter={(v, p) => p?.[0]?.payload?.label || v} />
+              <Legend wrapperStyle={{fontSize:10}} />
+              <Line type="monotone" dataKey="hadir" name="Hadir" stroke="#005baa" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="off" name="Off" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="sakit" name="Sakit" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="cuti" name="Cuti" stroke="#16a34a" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="idt" name="IDT" stroke="#e30613" strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
           </ResponsiveContainer></div>
         </div>
       </div>
@@ -1964,6 +2079,23 @@ function formatPeriodLabel(value) {
   return raw;
 }
 
+// Versi singkat formatPeriodLabel untuk label sumbu-X grafik (contoh: "Sep 26").
+function formatPeriodShort(value) {
+  const monthShort = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  if (value === null || value === undefined || value === '') return '';
+  const raw = String(value).trim();
+  const ym = raw.match(/^(\d{4})[-\/](\d{1,2})$/);
+  if (ym) {
+    const m = Number(ym[2]);
+    return m >= 1 && m <= 12 ? `${monthShort[m - 1]} ${ym[1].slice(2)}` : raw;
+  }
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return `${monthShort[parsed.getMonth()]} ${String(parsed.getFullYear()).slice(2)}`;
+  }
+  return raw;
+}
+
 
 
 
@@ -2305,7 +2437,7 @@ function DraggableLogo({ src, alt }) {
   }, [dragging]);
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', width: 125, height: size.h || 42, display: 'flex', alignItems: 'center' }}>
+    <div ref={wrapRef} className="idm-draglogo-wrap" style={{ position: 'relative', width: 125, height: size.h || 42, display: 'flex', alignItems: 'center' }}>
       <SnakeText active={dragging} originX={snakeOrigin.x} originY={snakeOrigin.y} />
       {dragging && (
         holeSrc ? (
@@ -2331,7 +2463,7 @@ function DraggableLogo({ src, alt }) {
           onTouchStart={handlePointerDown}
           onDragStart={(e) => e.preventDefault()}
           draggable={false}
-          className={dragging ? 'idm-logo-blink' : ''}
+          className={(dragging ? 'idm-logo-blink ' : '') + 'idm-draglogo-img'}
           style={{
             width: 125,
             height: 'auto',
@@ -2490,7 +2622,7 @@ function App() {
     // satu baris = satu karyawan pada satu tanggal, bukan format rekap matriks.
     const headers = [
       'No', 'NIK', 'Nama', 'Bagian', 'Tanggal', 'Hari', 'Shift',
-      'Masuk Seharusnya', 'Pulang Seharusnya', 'Masuk Aktual', 'Pulang Aktual',
+      'Masuk TSM', 'Pulang TSM', 'Masuk Aktual', 'Pulang Aktual',
       'Kode', 'Jenis', 'Keterangan', 'Penjelasan Karyawan'
     ];
 
@@ -2616,7 +2748,7 @@ function App() {
       // Kolom JENIS sengaja tidak ikut diekspor.
       const cols = [
         ['No', 'center'], ['NIK', 'center'], ['Nama', 'left'], ['Shift', 'center'],
-        ['Masuk Seharusnya', 'center'], ['Pulang Seharusnya', 'center'],
+        ['Masuk TSM', 'center'], ['Pulang TSM', 'center'],
         ['Masuk Aktual', 'center'], ['Pulang Aktual', 'center'],
         ['Tanggal', 'left'], ['Keterangan', 'left']
       ];
