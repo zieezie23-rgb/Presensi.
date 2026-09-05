@@ -2631,11 +2631,8 @@ function App() {
       const headTr = document.createElement('tr');
       cols.forEach(([label, align]) => {
         const th = document.createElement('th');
-        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;font-weight:600;height:34px;box-sizing:border-box;`;
-        const span = document.createElement('span');
-        span.textContent = label;
-        span.style.cssText = 'display:flex;align-items:center;justify-content:' + (align === 'left' ? 'flex-start' : 'center') + ';height:34px;line-height:1;box-sizing:border-box;';
-        th.appendChild(span);
+        th.style.cssText = `background:#005baa;color:#fff;border:1px solid #0a4d8f;padding:0 8px;text-align:${align};white-space:nowrap;font-weight:600;height:34px;line-height:34px;box-sizing:border-box;`;
+        th.textContent = label;
         headTr.appendChild(th);
       });
       thead.appendChild(headTr);
@@ -2658,11 +2655,8 @@ function App() {
         ];
         cells.forEach(([val, align]) => {
           const td = document.createElement('td');
-          td.style.cssText = `border:1px solid #cbd5e1;padding:0 8px;text-align:${align};vertical-align:middle;white-space:nowrap;background:#fff;height:32px;box-sizing:border-box;`;
-          const span = document.createElement('span');
-          span.textContent = val == null ? '' : String(val);
-          span.style.cssText = 'display:flex;align-items:center;justify-content:' + (align === 'left' ? 'flex-start' : 'center') + ';height:32px;line-height:1;box-sizing:border-box;';
-          td.appendChild(span);
+          td.style.cssText = `border:1px solid #cbd5e1;padding:0 8px;text-align:${align};white-space:nowrap;background:#fff;height:32px;line-height:32px;box-sizing:border-box;`;
+          td.textContent = val == null ? '' : String(val);
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
