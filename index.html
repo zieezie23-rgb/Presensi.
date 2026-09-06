@@ -337,6 +337,38 @@ button.text-white{background-color:var(--idm-red)!important}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#edf1f5}::-webkit-scrollbar-thumb{background:#9da9b6;border-radius:8px}
 
 </style>
+
+  <meta name="theme-color" content="#ffffff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rekap Presensi">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+
+
+<style id="pwa-fullscreen">
+html, body, #root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+html, body {
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+body {
+  padding: 0;
+}
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  html, body, #root {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="root"></div>
@@ -3114,5 +3146,14 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 
 </script>
+
+<script id="pwa-register">
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+
 </body>
 </html>
