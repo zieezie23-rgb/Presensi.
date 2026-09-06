@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rekap Presensi</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
@@ -338,14 +338,14 @@ button.text-white{background-color:var(--idm-red)!important}
 
 </style>
 
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0067B1">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Rekap Presensi">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="assets/icon.png">
-  <link rel="apple-touch-icon" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
 
 
 <style id="pwa-fullscreen">
@@ -367,6 +367,17 @@ body {
     height: 100dvh;
   }
 }
+</style>
+
+
+<style id="pwa-fullscreen-fix">
+html, body, #root {
+  margin: 0 !important;
+  min-height: 100% !important;
+  background: #0067B1;
+}
+html { background: #0067B1; }
+body { background: #0067B1; }
 </style>
 
 </head>
