@@ -64,9 +64,18 @@ button{transition:all .16s ease}
 .idm-period{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#6b7280;font-size:12px}
 .idm-period strong{color:#1f2937;font-size:13px}
 .idm-period-selector{display:flex;align-items:center;justify-content:flex-start;gap:5px;min-width:150px}
-.idm-period-selector select{appearance:none;background:transparent;border:0;outline:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;padding:2px 18px 2px 2px;text-align:left}
-.idm-period-selector select option{color:#1f2937;background:#fff}
-.idm-period-selector select:disabled{opacity:.7;cursor:wait}
+.month-dropdown-wrap{position:relative;display:inline-block;min-width:150px}
+.month-dropdown-button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:25px;padding:2px 4px;border:0;background:transparent;color:#fff;font-size:12px;font-weight:600;text-align:left;cursor:pointer;outline:none}
+.month-dropdown-button:disabled{opacity:.7;cursor:wait}
+.month-dropdown-chevron{font-size:13px;line-height:1;transition:transform .15s ease;opacity:.9}
+.month-dropdown-chevron.open{transform:rotate(180deg)}
+.month-dropdown-menu{position:absolute;top:calc(100% + 3px);left:0;z-index:1000;min-width:190px;max-height:58vh;overflow-y:auto;background:#fff;border:1px solid rgba(0,0,0,.14);border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.22);padding:4px}
+.month-dropdown-item{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:38px;padding:8px 10px;border:0;border-radius:6px;background:#fff;color:#334155;font-size:13px;font-weight:600;text-align:left;cursor:pointer}
+.month-dropdown-item:hover{background:#eef5ff}
+.month-dropdown-item.selected{background:#e8f1ff;color:#005baa}
+.month-dropdown-check{font-size:15px;font-weight:800;margin-left:12px}
+.month-dropdown-menu::-webkit-scrollbar{width:6px}
+.month-dropdown-menu::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
 
 /* ===== REKAP PRESENSI ===== */
 /* Outer containers are transparent; borders belong to the table/grid. */
@@ -382,6 +391,36 @@ body { background: #0067B1; }
 </style>
 
   <meta name="msapplication-TileColor" content="#0067B1">
+
+<style id="mobile-logo-size-fix">
+@media (max-width: 900px) {
+  /* Perbesar logo gambarnya, bukan kotak/background tombolnya. */
+  .idm-menu-btn {
+    width: 72px !important;
+    min-width: 72px !important;
+    height: 32px !important;
+    flex: 0 0 72px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .idm-draglogo-wrap {
+    width: 72px !important;
+    min-width: 72px !important;
+    height: 32px !important;
+    flex: 0 0 72px !important;
+    overflow: visible !important;
+  }
+  .idm-draglogo-img {
+    width: 72px !important;
+    max-width: none !important;
+    height: auto !important;
+  }
+  .idm-brand-title {
+    margin-left: 4px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="root"></div>
@@ -2532,6 +2571,79 @@ function DraggableLogo({ src, alt }) {
   );
 }
 
+
+function MonthDropdown({ periods, data, onSelect, disabled }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    const key = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close, { passive: true });
+    document.addEventListener('keydown', key);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+      document.removeEventListener('keydown', key);
+    };
+  }, [open]);
+
+  const current = data ? (periodKeyOf(data) || '') : '';
+  const currentLabel = data
+    ? formatPeriodLabel(current || data.monthLabelId || 'Periode tidak diketahui')
+    : 'Pilih bulan';
+
+  const choose = (period) => {
+    setOpen(false);
+    if (period && period !== current) onSelect(period);
+  };
+
+  return (
+    <div ref={wrapRef} className="month-dropdown-wrap">
+      <button
+        type="button"
+        className="month-dropdown-button"
+        onClick={() => !disabled && setOpen(v => !v)}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        title="Pilih periode"
+      >
+        <span>{currentLabel}</span>
+        <span className={`month-dropdown-chevron ${open ? 'open' : ''}`}>▾</span>
+      </button>
+
+      {open && periods.length > 0 && (
+        <div className="month-dropdown-menu" role="listbox">
+          {periods.map((r) => {
+            const value = r.period;
+            const selected = value === current;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`month-dropdown-item ${selected ? 'selected' : ''}`}
+                onClick={() => choose(value)}
+              >
+                <span>{formatPeriodLabel(value || r.label)}</span>
+                {selected && <span className="month-dropdown-check">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [data, setData] = useState(null);
   const [employeeDb, setEmployeeDb] = useState(EMPLOYEE_DB_SEED);
@@ -3017,16 +3129,12 @@ function App() {
           <h1>{tab === 'rekap' ? 'REKAP PRESENSI' : (TAB_LABELS[tab] || 'REKAP PRESENSI')}</h1>
           <div className="idm-period-selector">
             {periods.length > 0 ? (
-              <select
-                value={data ? periodKeyOf(data) || '' : ''}
-                onChange={(e) => loadPeriod(e.target.value)}
+              <MonthDropdown
+                periods={periods}
+                data={data}
+                onSelect={loadPeriod}
                 disabled={loadingPeriod || busy}
-                title="Pilih periode"
-              >
-                {periods.map((r) => (
-                  <option key={r.period} value={r.period}>{formatPeriodLabel(r.period || r.label)}</option>
-                ))}
-              </select>
+              />
             ) : (
               <p>{data ? formatPeriodLabel(periodKeyOf(data) || data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
             )}
