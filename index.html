@@ -671,7 +671,10 @@ const SHIFT_TABLE = (() => {
 })();
 
 function shiftInfoFor(shiftCode) {
-  const key = (shiftCode || '').toString().trim();
+  // Buang semua spasi (termasuk spasi tak-terlihat seperti non-breaking space)
+  // dan whitespace lain, bukan cuma di ujung, supaya kode shift selalu match
+  // dengan tabel referensi walau ada spasi liar di data mentah.
+  const key = (shiftCode || '').toString().replace(/\s+/g, '');
   return key && SHIFT_TABLE[key] ? SHIFT_TABLE[key] : null;
 }
 
