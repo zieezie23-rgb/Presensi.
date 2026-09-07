@@ -25,6 +25,9 @@ button{transition:all .16s ease}
 .idm-shell{min-height:100vh;background:#fff}
 .idm-brandbar{min-height:56px;background:linear-gradient(180deg,#0a6ac9 0%,#004a8f 100%);border-bottom:4px solid #fff;position:relative;display:flex;align-items:center;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .idm-brandbar:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:linear-gradient(90deg,var(--idm-red) 0 72%,var(--idm-yellow) 72% 100%)}
+@keyframes idm-upload-pop{0%{opacity:0;transform:translate(-50%,-4px) scale(.96)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+.upload-success{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;background:#16a34a;color:#fff;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.4);white-space:nowrap;animation:idm-upload-pop .2s ease-out;z-index:20}
+.upload-success.upload-error{background:#dc2626}
 .idm-logo{width:106px;height:42px;border:3px solid #fff;border-radius:7px;background:#ffd100;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden}
 .idm-menu-btn img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;-o-user-drag:none;user-drag:none;-webkit-touch-callout:none}
 .idm-logo-hole{position:absolute;left:0;top:0;border-radius:8px;background:radial-gradient(circle at 50% 50%,#000 0%,#0d0d0d 55%,#000 100%);box-shadow:inset 0 3px 6px rgba(0,0,0,.85);z-index:0;animation:idm-hole-pulse 1s ease-in-out infinite}
@@ -561,6 +564,7 @@ const CODE_META = {
   IDT: { label: 'Ijin Datang Terlambat', short: 'IDT', ink: '#854d0e', bg: '#fefce8', ring: '#fef08a' },
   DL:  { label: 'Dinas Luar Kota',       short: 'DL',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
   IP:  { label: 'Ijin Pulang',           short: 'IP',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
+  'SHIFT?': { label: 'Kode Shift Tidak Dikenal', short: 'SHIFT?', ink: '#9f1239', bg: '#ffe4e6', ring: '#fda4af' },
   '-': { label: 'Tidak ada data',        short: '-',   ink: '#94a3b8', bg: '#f8fafc', ring: '#e2e8f0' },
 };
 
@@ -726,7 +730,16 @@ function deriveCode(status, masuk, shiftCode) {
     if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
       const total = parts[0] * 60 + parts[1];
       const info = shiftInfoFor(shiftCode);
-      const scheduled = info ? toMinutes(info.masuk) : LATE_THRESHOLD_MIN;
+      if (!info) {
+        // Kode shift tidak ditemukan di tabel referensi (SHIFT_TABLE).
+        // Dulu ini diam-diam jatuh ke jadwal default 06:00, yang bisa
+        // salah menandai orang sebagai TSM padahal shift-nya cuma belum
+        // terdaftar. Sekarang ditandai eksplisit + dicatat ke console
+        // supaya kelihatan dan gampang dicari kode shift mana yang bolong.
+        console.warn(`[Rekap Presensi] Kode shift tidak dikenal: "${shiftCode}" — cek menu Pola Shift.`);
+        return { code: 'SHIFT?', rawShift: shiftCode };
+      }
+      const scheduled = toMinutes(info.masuk);
       // SALAH TSM:
       // - masuk aktual lebih dari 4 jam lebih awal dari jadwal, ATAU
       // - masuk aktual lebih dari 1 jam lebih lambat dari jadwal.
@@ -750,7 +763,7 @@ function deriveCode(status, masuk, shiftCode) {
 }
 
 function emptyTotals() {
-  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, TSM: 0, IDT: 0, DL: 0, IP: 0, DT: 0, minutes: 0 };
+  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, TSM: 0, IDT: 0, DL: 0, IP: 0, DT: 0, 'SHIFT?': 0, minutes: 0 };
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1150,7 +1163,7 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
         });
       }
     });
-    out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
+    out.sort((a, b) => a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik) || a.day - b.day);
     return out;
   }, [data]);
 
@@ -1164,7 +1177,7 @@ function PelanggaranTab({ data, onSelectEmployee, onExplain }) {
         out.push({ ...rec, nik: emp.nik, nama: emp.nama, day: d, masukSeharusnya: info?.masuk || '—', pulangSeharusnya: info?.pulang || '—' });
       }
     });
-    out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
+    out.sort((a, b) => a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik) || a.day - b.day);
     return out;
   }, [data]);
 
@@ -1795,7 +1808,7 @@ function AnalisisTab({ periods, employeeDbMap }) {
   );
 }
 
-function PolaShiftTab() {
+function PolaShiftTab({ onToast }) {
   const scrollRef = useRef(null);
   const [rows, setRows] = useState(() => Object.entries(normalizeShiftTable(SHIFT_TABLE)).sort(([a],[b]) => a.localeCompare(b, undefined, {numeric:true})));
   const [showForm, setShowForm] = useState(false);
@@ -1853,10 +1866,15 @@ function PolaShiftTab() {
     SHIFT_TABLE[k] = { masuk: normalizeShiftTime(masuk), pulang: normalizeShiftTime(pulang), ...(jumat ? { jumat: true } : {}) };
     saveLocal();
     refresh();
-    setSavingCloud(true);
-    sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
-      .catch(err => setError('Tersimpan di perangkat, tetapi gagal menyimpan ke database.'))
-      .finally(() => setSavingCloud(false));
+    if (sheetsApi.configured()) {
+      setSavingCloud(true);
+      sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
+        .then(() => onToast?.(`Pola shift ${k} tersimpan`))
+        .catch(err => { setError('Tersimpan di perangkat, tetapi gagal menyimpan ke database.'); onToast?.(`Pola shift ${k} tersimpan di perangkat saja (gagal ke database)`, 'error'); })
+        .finally(() => setSavingCloud(false));
+    } else {
+      onToast?.(`Pola shift ${k} tersimpan di perangkat`);
+    }
     setKode(''); setMasuk(''); setPulang(''); setJumat(false); setError(''); setShowForm(false);
   };
 
@@ -1865,10 +1883,15 @@ function PolaShiftTab() {
     delete SHIFT_TABLE[k];
     saveLocal();
     refresh();
-    setSavingCloud(true);
-    sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
-      .catch(() => setError('Perubahan tersimpan di perangkat, tetapi gagal menyimpan ke database.'))
-      .finally(() => setSavingCloud(false));
+    if (sheetsApi.configured()) {
+      setSavingCloud(true);
+      sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
+        .then(() => onToast?.(`Pola shift ${k} dihapus dan tersimpan`))
+        .catch(() => { setError('Perubahan tersimpan di perangkat, tetapi gagal menyimpan ke database.'); onToast?.(`Perubahan tersimpan di perangkat saja (gagal ke database)`, 'error'); })
+        .finally(() => setSavingCloud(false));
+    } else {
+      onToast?.(`Pola shift ${k} dihapus`);
+    }
   };
 
   return (
@@ -2657,6 +2680,11 @@ function App() {
   const [initLoading, setInitLoading] = useState(true);
   const [syncError, setSyncError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [actionToast, setActionToast] = useState(null);
+  const showActionToast = useCallback((message, tone = 'success') => {
+    setActionToast({ message, tone });
+    window.setTimeout(() => setActionToast((cur) => (cur && cur.message === message ? null : cur)), 2500);
+  }, []);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
@@ -2995,11 +3023,16 @@ function App() {
   const persistEmployeeDb = useCallback((next) => {
     localCache.set('lhpk:employee-db', JSON.stringify(next));
     if (sheetsApi.configured()) {
-      sheetsApi.post('saveEmployeeDb', { employees: next }).catch(() => {
-        setSyncError('Gagal menyimpan database karyawan (sementara tersimpan lokal saja).');
-      });
+      sheetsApi.post('saveEmployeeDb', { employees: next })
+        .then(() => showActionToast('Data karyawan tersimpan'))
+        .catch(() => {
+          setSyncError('Gagal menyimpan database karyawan (sementara tersimpan lokal saja).');
+          showActionToast('Gagal menyimpan ke database, tersimpan di perangkat saja', 'error');
+        });
+    } else {
+      showActionToast('Data karyawan tersimpan di perangkat');
     }
-  }, []);
+  }, [showActionToast]);
 
   const handleAddEmployee = useCallback((emp) => {
     setEmployeeDb((prev) => {
@@ -3144,8 +3177,11 @@ function App() {
             {loadingPeriod && <RefreshCw size={12} className="animate-spin" />}
           </div>
         </div>
-        {uploadSuccess && (
-          <div className="upload-success"><CheckCircle2 size={14} /> Upload berhasil</div>
+        {(uploadSuccess || actionToast) && (
+          <div className={`upload-success${actionToast?.tone === 'error' ? ' upload-error' : ''}`}>
+            {actionToast?.tone === 'error' ? <FileWarning size={14} /> : <CheckCircle2 size={14} />}
+            {actionToast ? actionToast.message : 'Upload berhasil'}
+          </div>
         )}
         {(
           <div className="idm-top-actions">
@@ -3247,7 +3283,7 @@ function App() {
           <KaryawanTab employeeDb={employeeDb} onAdd={handleAddEmployee} onDelete={handleDeleteEmployee} />
         )}
         {tab === 'pola-shift' && (
-          <PolaShiftTab />
+          <PolaShiftTab onToast={showActionToast} />
         )}
       </div>
       {showSideMenu && (
