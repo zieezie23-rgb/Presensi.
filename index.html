@@ -743,7 +743,7 @@ function getUnexplainedViolationRows(data) {
       });
     }
   });
-  out.sort((a, b) => a.day - b.day || a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik));
+  out.sort((a, b) => a.nama.localeCompare(b.nama, 'id') || a.nik.localeCompare(b.nik) || a.day - b.day);
   return out;
 }
 
