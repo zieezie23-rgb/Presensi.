@@ -707,6 +707,25 @@ const SHIFT_TABLE = (() => {
   return normalizeShiftTable(DEFAULT_SHIFT_TABLE);
 })();
 
+// Terapkan hasil sinkron pola shift dari Google Sheets ke SHIFT_TABLE (global) +
+// simpan ke localStorage. Dipakai bareng saat sinkron awal (App) maupun saat
+// tab Data/Pola Shift dibuka, supaya kode shift baru langsung kepakai di rekap
+// tanpa harus buka halaman Data/Pola Shift dulu.
+function applyShiftDbFromServer(shifts) {
+  if (!Array.isArray(shifts) || shifts.length === 0) return false;
+  Object.keys(SHIFT_TABLE).forEach(k => delete SHIFT_TABLE[k]);
+  shifts.forEach(row => {
+    if (!row || !row.kode) return;
+    SHIFT_TABLE[String(row.kode)] = {
+      masuk: normalizeShiftTime(row.masuk),
+      pulang: normalizeShiftTime(row.pulang),
+      ...(row.jumat ? { jumat: true } : {})
+    };
+  });
+  localStorage.setItem('lhpk-shift-table', JSON.stringify(normalizeShiftTable(SHIFT_TABLE)));
+  return true;
+}
+
 function shiftInfoFor(shiftCode) {
   // Buang semua spasi (termasuk spasi tak-terlihat seperti non-breaking space)
   // dan whitespace lain, bukan cuma di ujung, supaya kode shift selalu match
@@ -1346,7 +1365,7 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_NAME_VERSION = 'REKAP PRESENSI v1.0.0';
+const APP_NAME_VERSION = 'Zie Project - Rekap Presensi V.1.0.1 @2026';
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
 
@@ -1417,9 +1436,6 @@ function AppFooterBar({ onOpenPanduan }) {
       <span className="idm-footer-pill idm-footer-badge">{APP_NAME_VERSION}</span>
       <a className="idm-footer-pill idm-footer-link" href={`https://wa.me/${CONTACT_WHATSAPP.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">
         <MessageCircle size={11} /> WhatsApp
-      </a>
-      <a className="idm-footer-pill idm-footer-link" href={`mailto:${CONTACT_EMAIL}`}>
-        <Mail size={11} /> Email
       </a>
     </div>
   );
@@ -1696,24 +1712,69 @@ function KaryawanTab({ employeeDb, onAdd, onDelete }) {
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcBzDUt73lhjYUbOn0jyMy9JqsRIdWY6y5XyepaQpWqh-bDMQefvW4yl1Hhq4n5VIlQg/exec';
 const APPS_SCRIPT_KEY = 'cB0NC0kuadrat'; // <-- isi sama dengan API_KEY di Apps Script
 
+// Supaya tahan koneksi jelek: tiap request dikasih batas waktu (timeout) dan
+// dicoba ulang otomatis (retry + backoff) kalau gagalnya karena jaringan
+// (timeout / putus), BUKAN karena error dari server (itu langsung dilempar,
+// retry tidak akan membantu, mis. API key salah).
+const SHEETS_API_TIMEOUT_MS = 12000; // 12 detik per percobaan
+const SHEETS_API_MAX_RETRIES = 2;    // total sampai 3x percobaan
+const SHEETS_API_RETRY_BASE_MS = 900; // jeda 0.9s, 1.8s, ... (backoff bertahap)
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchSheetsJson(url, options) {
+  let lastNetworkErr = null;
+  for (let attempt = 0; attempt <= SHEETS_API_MAX_RETRIES; attempt++) {
+    let res;
+    try {
+      res = await fetchWithTimeout(url, options, SHEETS_API_TIMEOUT_MS);
+    } catch (networkErr) {
+      // Gagal total: timeout (AbortError) atau koneksi putus (TypeError: Failed to fetch).
+      // Ini yang paling sering terjadi di sinyal lemah -> layak dicoba ulang.
+      lastNetworkErr = networkErr;
+      if (attempt < SHEETS_API_MAX_RETRIES) { await sleep(SHEETS_API_RETRY_BASE_MS * (attempt + 1)); continue; }
+      throw new Error('Koneksi ke server terputus/timeout setelah beberapa percobaan. Cek sinyal internet lalu coba lagi.');
+    }
+
+    if (!res.ok) {
+      // 5xx biasanya sementara (server lagi sibuk/cold start) -> layak dicoba ulang.
+      // 4xx (mis. salah action/API key) tidak akan membaik walau diulang.
+      if (res.status >= 500 && attempt < SHEETS_API_MAX_RETRIES) {
+        await sleep(SHEETS_API_RETRY_BASE_MS * (attempt + 1));
+        continue;
+      }
+      throw new Error(`Server merespons error (HTTP ${res.status}).`);
+    }
+
+    const json = await res.json().catch(() => { throw new Error('Respons server tidak valid (bukan JSON).'); });
+    if (json.error) throw new Error(json.error); // error aplikasi dari Apps Script -> jangan retry
+    return json;
+  }
+  throw lastNetworkErr || new Error('Gagal menghubungi server.');
+}
+
 const sheetsApi = {
   configured() { return !!APPS_SCRIPT_URL; },
   async get(action, params) {
     const qs = new URLSearchParams({ action, ...(params || {}) }).toString();
-    const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    return json;
+    return fetchSheetsJson(`${APPS_SCRIPT_URL}?${qs}`);
   },
   async post(action, body) {
-    const res = await fetch(APPS_SCRIPT_URL, {
+    return fetchSheetsJson(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight Apps Script
       body: JSON.stringify({ action, apiKey: APPS_SCRIPT_KEY, ...(body || {}) }),
     });
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    return json;
   },
 };
 
@@ -1978,16 +2039,7 @@ function PolaShiftTab({ onToast }) {
       try {
         const res = await sheetsApi.get('getShiftDb');
         if (Array.isArray(res.shifts) && res.shifts.length > 0) {
-          Object.keys(SHIFT_TABLE).forEach(k => delete SHIFT_TABLE[k]);
-          res.shifts.forEach(row => {
-            if (!row || !row.kode) return;
-            SHIFT_TABLE[String(row.kode)] = {
-              masuk: normalizeShiftTime(row.masuk),
-              pulang: normalizeShiftTime(row.pulang),
-              ...(row.jumat ? { jumat: true } : {})
-            };
-          });
-          saveLocal();
+          applyShiftDbFromServer(res.shifts);
           refresh();
         } else if (Array.isArray(res.shifts) && res.shifts.length === 0) {
           await sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) });
@@ -2840,6 +2892,7 @@ function App() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [periods, setPeriods] = useState([]);
   const [loadingPeriod, setLoadingPeriod] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -2855,12 +2908,16 @@ function App() {
       return;
     }
 
-    // 2) Sinkron ke Google Sheets di belakang layar — tidak memblokir tampilan.
+    // 2) Sinkron ke Google Sheets di belakang layar — tidak memblokir tampilan,
+    //    tapi tombol UPLOAD dikunci dulu (isSyncing) supaya tidak ada yang upload
+    //    sebelum data terbaru dari server selesai ditarik (bisa bikin tabrakan data).
+    setIsSyncing(true);
     (async () => {
       try {
-        const [{ rows }, edbRes] = await Promise.all([
+        const [{ rows }, edbRes, shiftRes] = await Promise.all([
           sheetsApi.get('getIndex'),
           sheetsApi.get('getEmployeeDb'),
+          sheetsApi.get('getShiftDb').catch(() => null), // jangan sampai gagal shift bikin sinkron lain ikut gagal
         ]);
 
         if (edbRes.employees && edbRes.employees.length > 0) {
@@ -2870,6 +2927,12 @@ function App() {
           // EmployeeDB kosong di sheet (baru pertama kali dipakai) -> seed awal
           setEmployeeDb(EMPLOYEE_DB_SEED);
           sheetsApi.post('saveEmployeeDb', { employees: EMPLOYEE_DB_SEED }).catch(() => {});
+        }
+
+        // Pola shift ikut disinkron di sini juga (bareng data lain), jadi kode shift
+        // baru langsung kepakai di rekap tanpa perlu buka halaman Data/Pola Shift dulu.
+        if (shiftRes && Array.isArray(shiftRes.shifts)) {
+          applyShiftDbFromServer(shiftRes.shifts);
         }
 
         if (rows && rows.length > 0) {
@@ -2886,6 +2949,8 @@ function App() {
       } catch (apiErr) {
         // Google Sheets gagal diakses (offline/URL salah) -> data cache yang sudah tampil tetap dipakai
         setSyncError('Gagal sinkron, menampilkan data cache lokal terakhir.');
+      } finally {
+        setIsSyncing(false);
       }
     })();
   }, []);
@@ -3336,7 +3401,7 @@ function App() {
                 periods={periods}
                 data={data}
                 onSelect={loadPeriod}
-                disabled={loadingPeriod || busy}
+                disabled={loadingPeriod || busy || isSyncing}
               />
             ) : (
               <p>{data ? formatPeriodLabel(periodKeyOf(data) || data.monthLabelId || 'Periode tidak diketahui') : 'Rekap Presensi Karyawan'}</p>
@@ -3356,10 +3421,16 @@ function App() {
               <>
                 <input ref={fileInputRef} type="file" accept=".xls,.xlsx" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
-                <button onClick={() => fileInputRef.current?.click()} disabled={busy}
+                <button
+                  onClick={() => {
+                    if (isSyncing) { showActionToast('Sedang sinkronisasi data, mohon tunggu sebentar…', 'error'); return; }
+                    fileInputRef.current?.click();
+                  }}
+                  disabled={busy || isSyncing}
+                  title={isSyncing ? 'Sedang sinkronisasi, tunggu sebentar' : 'Upload file LHPK'}
                   className="btn-upload-lhpk inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
-                  style={{ backgroundColor:'#e30613', color:'#fff' }}>
-                  {busy ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD
+                  style={{ backgroundColor:'#e30613', color:'#fff', opacity: (busy || isSyncing) ? 0.6 : 1, cursor: (busy || isSyncing) ? 'not-allowed' : 'pointer' }}>
+                  {(busy || isSyncing) ? <RefreshCw size={15} className="animate-spin" /> : <Upload size={15} />} UPLOAD
                 </button>
                 {data && (
                   <>
@@ -3424,6 +3495,13 @@ function App() {
             <FileWarning size={13} className="shrink-0" />
             <span>{syncError}</span>
             <button onClick={() => setSyncError(null)} className="ml-auto"><X size={13} /></button>
+          </div>
+        )}
+
+        {isSyncing && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: '#bfdbfe', backgroundColor: '#eff6ff', color: '#1e40af' }}>
+            <RefreshCw size={13} className="shrink-0 animate-spin" />
+            <span>Sedang sinkronisasi data terbaru dari server, mohon tunggu sebelum upload…</span>
           </div>
         )}
 
