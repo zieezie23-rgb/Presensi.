@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rekap-presensi-pwa-v2';
+const CACHE_NAME = 'rekap-presensi-pwa-v1.0.3';
 const APP_SHELL = [
   './',
   './index.html',

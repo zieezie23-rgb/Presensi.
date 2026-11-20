@@ -487,6 +487,7 @@ const Trash2 = makeIcon(<><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 
 const Database = makeIcon(<><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></>);
 const Home = makeIcon(<><path d="M3 9l9-7 9 7" /><path d="M9 22V12h6v10" /><path d="M5 10v10a1 1 0 0 0 1 1h3M19 10v10a1 1 0 0 1-1 1h-3" /></>);
 const ChartIcon = makeIcon(<><line x1="4" y1="20" x2="4" y2="10" /><line x1="10" y1="20" x2="10" y2="4" /><line x1="16" y1="20" x2="16" y2="7" /><line x1="22" y1="20" x2="22" y2="2" /></>);
+const Tags = makeIcon(<><path d="M20.59 13.41 11 3.83V3H4v7h.83l9.58 9.59a2 2 0 0 0 2.83 0l3.35-3.35a2 2 0 0 0 0-2.83Z"/><circle cx="7.5" cy="6.5" r=".5"/></>);
 const Settings = makeIcon(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>);
 const UserCog = makeIcon(<><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h3" /><circle cx="18" cy="18" r="3" /><path d="M18 14.5v1M18 20.5v1M14.5 18h1M20.5 18h1M15.5 15.5l.7.7M20.3 20.3l.7.7M15.5 20.5l.7-.7M20.3 15.7l.7-.7" /></>);
 const Lock = makeIcon(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>);
@@ -599,7 +600,46 @@ const CODE_META = {
   IP:  { label: 'Ijin Pulang',           short: 'IP',  ink: '#115e59', bg: '#f0fdfa', ring: '#99f6e4' },
   'SHIFT?': { label: 'Kode Shift Tidak Dikenal', short: 'SHIFT?', ink: '#9f1239', bg: '#ffe4e6', ring: '#fda4af' },
   '-': { label: 'Tidak ada data',        short: '-',   ink: '#94a3b8', bg: '#f8fafc', ring: '#e2e8f0' },
+  UNMAPPED: { label: 'Status LHPK belum dipetakan', short: 'CEK', ink: '#9f1239', bg: '#fff1f2', ring: '#fda4af' },
 };
+
+// Pemetaan Status LHPK (kolom F) ke kode kategori aplikasi.
+// Disimpan lokal agar pengaturan kategori tidak mengubah backend/fitur lama.
+const DEFAULT_CATEGORY_MAP = [
+  { status: 'Libur', code: 'OFF' },
+  { status: 'Sakit', code: 'S' },
+  { status: 'Cuti Tahunan', code: 'C' },
+  { status: 'Cuti Besar', code: 'C' },
+  { status: 'Mangkir', code: 'M' },
+  { status: 'Lupa Absen Waktu Masuk', code: 'LAM' },
+  { status: 'Lupa Absen Waktu Pulang', code: 'LAP' },
+  { status: 'Ijin Datang Terlambat', code: 'IDT' },
+  { status: 'Ijin Pulang', code: 'IP' },
+  { status: 'Dinas Luar Kota', code: 'DL' },
+];
+function loadCategoryMap() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('lhpk-category-map') || 'null');
+    if (Array.isArray(saved)) return saved.filter(x => x && String(x.status || '').trim() && String(x.code || '').trim());
+  } catch (e) {}
+  return DEFAULT_CATEGORY_MAP.map(x => ({ ...x }));
+}
+let CATEGORY_MAP = loadCategoryMap();
+function normalizeStatusKey(value) { return String(value || '').trim().replace(/\\s+/g, ' ').toLocaleLowerCase('id'); }
+function saveCategoryMap() { localStorage.setItem('lhpk-category-map', JSON.stringify(CATEGORY_MAP)); }
+function categoryMeta(code) {
+  if (CODE_META[code]) return CODE_META[code];
+  // Warna stabil untuk kode kategori tambahan.
+  let hash = 0; for (const ch of String(code || '')) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  const palette = [
+    ['#1d4ed8','#dbeafe','#93c5fd'], ['#047857','#d1fae5','#6ee7b7'],
+    ['#7c3aed','#ede9fe','#c4b5fd'], ['#b45309','#fef3c7','#fcd34d'],
+    ['#be123c','#ffe4e6','#fda4af'], ['#0e7490','#cffafe','#67e8f9'],
+    ['#4d7c0f','#ecfccb','#bef264'], ['#6d28d9','#f3e8ff','#d8b4fe']
+  ];
+  const c = palette[hash % palette.length];
+  return { label: `Kategori ${code}`, short: String(code).slice(0, 8), ink: c[0], bg: c[1], ring: c[2] };
+}
 
 const LATE_THRESHOLD_MIN = 6 * 60; // fallback jika kode shift tidak dikenali — 06:00
 
@@ -768,6 +808,25 @@ function getUnexplainedViolationRows(data) {
 
 function deriveCode(status, masuk, shiftCode) {
   const s = (status || '').trim();
+  if (s === 'Hadir') {
+    const parts = (masuk || '').split(':').map((x) => parseInt(x, 10));
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      const total = parts[0] * 60 + parts[1];
+      const info = shiftInfoFor(shiftCode);
+      if (!info) {
+        console.warn(`[Rekap Presensi] Kode shift tidak dikenal: "${shiftCode}" — cek menu Pola Shift.`);
+        return { code: 'SHIFT?', rawShift: shiftCode };
+      }
+      const scheduled = toMinutes(info.masuk);
+      if (total < scheduled - (4 * 60) || total > scheduled + 60) return { code: 'TSM' };
+      if (total > scheduled) return { code: 'DT', lateMin: total - scheduled };
+      return { code: 'OK' };
+    }
+    return { code: 'OK' };
+  }
+  const mapped = CATEGORY_MAP.find(x => normalizeStatusKey(x.status) === normalizeStatusKey(s));
+  if (mapped) return { code: String(mapped.code).trim().toUpperCase(), rawStatus: s };
+  if (!s) return { code: 'UNMAPPED', rawStatus: '' };
   if (s === 'Libur') return { code: 'OFF' };
   if (s === 'Sakit') return { code: 'S' };
   // Cuti: pengecekan eksplisit "Cuti Tahunan"/"Cuti Besar", ditambah
@@ -790,45 +849,13 @@ function deriveCode(status, masuk, shiftCode) {
   if (s === 'Ijin Datang Terlambat') return { code: 'IDT' };
   if (s === 'Ijin Pulang') return { code: 'IP' };
   if (s === 'Dinas Luar Kota') return { code: 'DL' };
-  if (s === 'Hadir') {
-    const parts = (masuk || '').split(':').map((x) => parseInt(x, 10));
-    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      const total = parts[0] * 60 + parts[1];
-      const info = shiftInfoFor(shiftCode);
-      if (!info) {
-        // Kode shift tidak ditemukan di tabel referensi (SHIFT_TABLE).
-        // Dulu ini diam-diam jatuh ke jadwal default 06:00, yang bisa
-        // salah menandai orang sebagai TSM padahal shift-nya cuma belum
-        // terdaftar. Sekarang ditandai eksplisit + dicatat ke console
-        // supaya kelihatan dan gampang dicari kode shift mana yang bolong.
-        console.warn(`[Rekap Presensi] Kode shift tidak dikenal: "${shiftCode}" — cek menu Pola Shift.`);
-        return { code: 'SHIFT?', rawShift: shiftCode };
-      }
-      const scheduled = toMinutes(info.masuk);
-      // SALAH TSM:
-      // - masuk aktual lebih dari 4 jam lebih awal dari jadwal, ATAU
-      // - masuk aktual lebih dari 1 jam lebih lambat dari jadwal.
-      const tsmEarlyLimit = scheduled - (4 * 60);
-      const tsmLateLimit = scheduled + 60;
-      if (total < tsmEarlyLimit || total > tsmLateLimit) {
-        return { code: 'TSM' };
-      }
-
-      // Datang Terlambat ditampilkan langsung pada kolom tanggal.
-      // Terlambat sampai dengan 1 jam = DT; lebih dari 1 jam = TSM.
-      if (total > scheduled) {
-        return { code: 'DT', lateMin: total - scheduled };
-      }
-
-      return { code: 'OK' };
-    }
-    return { code: 'OK' };
-  }
-  return { code: '-' };
+  return { code: 'UNMAPPED', rawStatus: s };
 }
 
 function emptyTotals() {
-  return { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, TSM: 0, IDT: 0, DL: 0, IP: 0, DT: 0, 'SHIFT?': 0, minutes: 0 };
+  const totals = { OK: 0, OFF: 0, S: 0, C: 0, M: 0, LAM: 0, LAP: 0, TSM: 0, IDT: 0, DL: 0, IP: 0, DT: 0, 'SHIFT?': 0, UNMAPPED: 0, minutes: 0 };
+  CATEGORY_MAP.forEach(x => { const code = String(x.code || '').trim().toUpperCase(); if (code && !(code in totals)) totals[code] = 0; });
+  return totals;
 }
 
 // Menghitung totals + jumlah pelanggaran + rata-rata menit telat untuk satu
@@ -962,12 +989,12 @@ async function parseLhpkFile(file) {
 /* ---------------------------------------------------------------------- */
 
 function Badge({ code }) {
-  const meta = CODE_META[code] || CODE_META['-'];
+  const meta = categoryMeta(code);
   return (
     <span
       className="kode-text"
       style={{ color: meta.ink, backgroundColor: meta.bg, borderRadius: 3, padding: '1px 5px', display: 'inline-block', lineHeight: 1.3, fontWeight: 600 }}
-      title={meta.label}
+      title={code === 'UNMAPPED' ? 'Status LHPK belum dipetakan' : meta.label}
     >
       {meta.short}
     </span>
@@ -1365,7 +1392,8 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_NAME_VERSION = 'Zie Project - Rekap Presensi V.1.0.1 @2026';
+const APP_VERSION = 'V.1.0.3';
+const APP_NAME_VERSION = `Zie Project - Rekap Presensi ${APP_VERSION} @2026`;
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
 
@@ -1802,6 +1830,7 @@ const ADMIN_TABS = [
   { id: 'analisis', label: 'ANALISIS', icon: ChartIcon, featured: true },
   { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
   { id: 'pola-shift', label: 'DATA / POLA SHIFT', icon: Clock },
+  { id: 'kategori', label: 'KATEGORI', icon: Tags },
   { id: 'database', label: 'DATABASE', icon: Database },
 ];
 
@@ -2210,6 +2239,53 @@ function SideMenu({ tab, onSelect, onClose }) {
       </div>
     </div>
   );
+}
+
+function KategoriTab({ onToast }) {
+  const [rows, setRows] = useState(() => CATEGORY_MAP.map(x => ({ ...x })));
+  const [status, setStatus] = useState('');
+  const [code, setCode] = useState('');
+  const [editIndex, setEditIndex] = useState(-1);
+  const [error, setError] = useState('');
+  const persist = (next) => {
+    CATEGORY_MAP = next.map(x => ({ status: String(x.status).trim(), code: String(x.code).trim().toUpperCase() }));
+    saveCategoryMap(); setRows(CATEGORY_MAP.map(x => ({ ...x })));
+    // Rehitung dataset yang sedang aktif agar pemetaan baru langsung terlihat.
+    window.dispatchEvent(new Event('lhpk-category-map-updated'));
+  };
+  const submit = (e) => {
+    e.preventDefault(); const st = status.trim().replace(/\\s+/g, ' '); const cd = code.trim().toUpperCase();
+    if (!st || !cd) { setError('Status LHPK dan Kategori wajib diisi.'); return; }
+    if (!/^[A-Z0-9_-]{1,8}$/.test(cd)) { setError('Kode kategori 1–8 karakter, gunakan huruf/angka/_/-.'); return; }
+    const duplicate = rows.findIndex((x,i) => normalizeStatusKey(x.status) === normalizeStatusKey(st) && i !== editIndex);
+    if (duplicate >= 0) { setError('Status LHPK tersebut sudah terdaftar. Gunakan Edit.'); return; }
+    const next = rows.map(x => ({ ...x }));
+    if (editIndex >= 0) next[editIndex] = { status: st, code: cd }; else next.push({ status: st, code: cd });
+    persist(next); setStatus(''); setCode(''); setEditIndex(-1); setError(''); onToast?.('Pemetaan kategori tersimpan');
+  };
+  const edit = (i) => { setEditIndex(i); setStatus(rows[i].status); setCode(rows[i].code); setError(''); };
+  const remove = (i) => {
+    const item = rows[i];
+    if (!window.confirm(`Hapus pemetaan status "${item.status}" → ${item.code}? Data historis yang sudah tersimpan tidak dihapus.`)) return;
+    persist(rows.filter((_,idx) => idx !== i));
+    if (editIndex === i) { setEditIndex(-1); setStatus(''); setCode(''); }
+    onToast?.('Pemetaan kategori dihapus');
+  };
+  return <div className="space-y-4">
+    <div><p className="text-sm font-semibold text-slate-700">Kategori</p><p className="text-xs text-slate-500 mt-0.5">Petakan teks Status LHPK dari kolom F menjadi kode kategori yang tampil di aplikasi.</p></div>
+    <div className="overflow-x-auto rounded-lg border border-slate-200"><table className="w-full text-xs"><thead className="bg-slate-100 text-slate-600"><tr><th className="text-left px-3 py-2">Status LHPK</th><th className="text-left px-3 py-2">Kategori</th></tr></thead><tbody>
+      {rows.map((r,i)=><tr key={`${r.status}-${i}`} className="border-t border-slate-200"><td className="px-3 py-2 text-slate-700">{r.status}</td><td className="px-3 py-2"><div className="flex items-center justify-between gap-2"><Badge code={r.code}/><span className="whitespace-nowrap"><button onClick={()=>edit(i)} className="text-blue-700 font-semibold px-2 py-1">Edit</button><button onClick={()=>remove(i)} className="text-rose-600 font-semibold px-2 py-1">Hapus</button></span></div></td></tr>)}
+      {rows.length===0&&<tr><td colSpan="2" className="text-center text-slate-400 py-5">Belum ada pemetaan kategori.</td></tr>}
+    </tbody></table></div>
+    <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+      <p className="text-xs font-semibold text-slate-700">{editIndex >= 0 ? 'Edit Kategori' : 'Tambah Kategori'}</p>
+      <label className="block text-[11px] font-medium text-slate-600">Status LHPK (kolom F)<input value={status} onChange={e=>setStatus(e.target.value)} placeholder="Contoh: Ijin Keperluan Keluarga" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
+      <label className="block text-[11px] font-medium text-slate-600">Kategori / Kode aplikasi<input value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,8))} placeholder="Contoh: IZK" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
+      {error&&<p className="text-[11px] text-rose-600">{error}</p>}
+      <div className="flex gap-2"><button type="submit" className="rounded-md px-3 py-2 text-xs font-semibold text-white" style={{backgroundColor:'#005baa'}}>{editIndex>=0?'Simpan Perubahan':'Tambah Kategori'}</button>{editIndex>=0&&<button type="button" onClick={()=>{setEditIndex(-1);setStatus('');setCode('');setError('');}} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button>}</div>
+    </form>
+    <p className="text-[11px] text-slate-500">Kode kategori tambahan langsung tampil sebagai badge dengan warna otomatis. Kategori khusus tidak mengubah rumus pelanggaran bawaan (DT, LAM, LAP, M, TSM).</p>
+  </div>;
 }
 
 function AdminMenu({ tab, onSelect, onClose, onDatabase }) {
@@ -2896,6 +2972,27 @@ function App() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    const refreshMappedCodes = () => {
+      setData(prev => {
+        if (!prev || !Array.isArray(prev.employees)) return prev;
+        const next = { ...prev, employees: prev.employees.map(emp => {
+          const days = {};
+          Object.entries(emp.days || {}).forEach(([day, rec]) => {
+            const mapped = deriveCode(rec.status, rec.masuk, rec.shift);
+            days[day] = { ...rec, code: mapped.code, lateMin: mapped.lateMin || 0 };
+          });
+          return { ...emp, days };
+        }) };
+        const recomputed = withRecomputedTotals(next);
+        localCache.set('lhpk:dataset', JSON.stringify(recomputed));
+        return recomputed;
+      });
+    };
+    window.addEventListener('lhpk-category-map-updated', refreshMappedCodes);
+    return () => window.removeEventListener('lhpk-category-map-updated', refreshMappedCodes);
+  }, []);
+
+  useEffect(() => {
     // 1) Tampilkan dulu data dari cache lokal (instan, tanpa nunggu jaringan sama sekali).
     const cachedData = localCache.get('lhpk:dataset');
     const cachedEdb = localCache.get('lhpk:employee-db');
@@ -3457,9 +3554,10 @@ function App() {
                         </div>
                       )}
                     </div>
-                    <button onClick={() => setShowAdminMenu(true)} title="Menu admin" aria-label="Menu admin"
-                      className="inline-flex items-center justify-center">
+                    <button onClick={() => setShowAdminMenu(true)} title="Menu admin" aria-label={`Menu admin ${APP_VERSION}`}
+                      className="inline-flex flex-col items-center justify-center" style={{ gap: 1, lineHeight: 1 }}>
                       <Settings size={26} color="#fff" />
+                      <span style={{ color: '#fff', fontSize: 8, fontWeight: 600, letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{APP_VERSION}</span>
                     </button>
                   </>
                 )}
@@ -3505,7 +3603,7 @@ function App() {
           </div>
         )}
 
-        {!data && tab !== 'karyawan' && tab !== 'pola-shift' && tab !== 'database' && tab !== 'analisis' && (
+        {!data && tab !== 'karyawan' && tab !== 'pola-shift' && tab !== 'kategori' && tab !== 'database' && tab !== 'analisis' && (
           <div className="flex flex-col items-center justify-center text-center py-16 text-slate-400">
             <FileWarning size={28} className="mb-3" />
             <p className="text-sm font-medium text-slate-500">Belum ada data presensi</p>
@@ -3529,6 +3627,9 @@ function App() {
         )}
         {tab === 'pola-shift' && (
           <PolaShiftTab onToast={showActionToast} />
+        )}
+        {tab === 'kategori' && (
+          <KategoriTab onToast={showActionToast} />
         )}
       </div>
       {showSideMenu && (
