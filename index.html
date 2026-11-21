@@ -1406,7 +1406,7 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_VERSION = 'V.1.0.4';
+const APP_VERSION = 'V.1.0.5';
 const APP_NAME_VERSION = `Zie Project - Rekap Presensi ${APP_VERSION} @2026`;
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
@@ -1843,7 +1843,7 @@ const NAV_TABS = [
 const ADMIN_TABS = [
   { id: 'analisis', label: 'ANALISIS', icon: ChartIcon, featured: true },
   { id: 'karyawan', label: 'DATA KARYAWAN', icon: Building2 },
-  { id: 'pola-shift', label: 'DATA / POLA SHIFT', icon: Clock },
+  { id: 'pola-shift', label: 'POLA SHIFT', icon: Clock },
   { id: 'kategori', label: 'KATEGORI', icon: Tags },
   { id: 'database', label: 'DATABASE', icon: Database },
 ];
@@ -2101,26 +2101,29 @@ function PolaShiftTab({ onToast }) {
   };
   const saveLocal = () => localStorage.setItem('lhpk-shift-table', JSON.stringify(normalizeShiftTable(SHIFT_TABLE)));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     const k = kode.trim();
     if (!k || !masuk || !pulang) { setError('Kode shift, jam masuk, dan jam pulang wajib diisi.'); return; }
     if (!/^\d{1,6}$/.test(k)) { setError('Kode shift hanya boleh berupa angka.'); return; }
+    if (Object.prototype.hasOwnProperty.call(SHIFT_TABLE, k)) { setError(`Kode shift ${k} sudah terdaftar.`); return; }
     const validTime = (v) => /^([01]?\d|2[0-3]):[0-5]\d$/.test(v);
     if (!validTime(masuk) || !validTime(pulang)) { setError('Format jam harus HH:MM.'); return; }
-    SHIFT_TABLE[k] = { masuk: normalizeShiftTime(masuk), pulang: normalizeShiftTime(pulang), ...(jumat ? { jumat: true } : {}) };
-    saveLocal();
-    refresh();
-    if (sheetsApi.configured()) {
-      setSavingCloud(true);
-      sheetsApi.post('saveShiftDb', { shifts: Object.entries(SHIFT_TABLE).map(([kode, v]) => ({ kode, ...v })) })
-        .then(() => onToast?.(`Pola shift ${k} tersimpan`))
-        .catch(err => { setError('Tersimpan di perangkat, tetapi gagal menyimpan ke database.'); onToast?.(`Pola shift ${k} tersimpan di perangkat saja (gagal ke database)`, 'error'); })
-        .finally(() => setSavingCloud(false));
-    } else {
-      onToast?.(`Pola shift ${k} tersimpan di perangkat`);
-    }
-    setKode(''); setMasuk(''); setPulang(''); setJumat(false); setError(''); setShowForm(false);
+    const next = { ...SHIFT_TABLE, [k]: { masuk: normalizeShiftTime(masuk), pulang: normalizeShiftTime(pulang), ...(jumat ? { jumat: true } : {}) } };
+    setSavingCloud(true); setError('');
+    try {
+      if (sheetsApi.configured()) {
+        const result = await sheetsApi.post('saveShiftDb', { shifts: Object.entries(next).map(([kode, v]) => ({ kode, ...v })) });
+        if (!result || result.ok !== true) throw new Error('Database tidak mengonfirmasi penyimpanan.');
+      }
+      Object.keys(SHIFT_TABLE).forEach(key => delete SHIFT_TABLE[key]);
+      Object.assign(SHIFT_TABLE, next);
+      saveLocal(); refresh();
+      setKode(''); setMasuk(''); setPulang(''); setJumat(false); setShowForm(false);
+      onToast?.(sheetsApi.configured() ? `Pola shift ${k} tersimpan ke database` : `Pola shift ${k} tersimpan di perangkat`);
+    } catch (err) {
+      setError(`Gagal menyimpan pola shift ke database: ${err.message || 'periksa koneksi'}`);
+    } finally { setSavingCloud(false); }
   };
 
   const remove = (k) => {
@@ -2150,21 +2153,23 @@ function PolaShiftTab({ onToast }) {
           onClick={() => { setShowForm((v) => !v); setError(''); }}
           className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold text-white"
           style={{ backgroundColor:'#005baa' }}
-        ><Plus size={14} /> Tambah Data</button>
+        ><Plus size={14} /> Tambah Pola</button>
       </div>
 
       {showForm && (
-        <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-white p-3 mb-4 shadow-sm">
-          <p className="text-xs font-semibold text-slate-600 mb-2.5">Tambah Pola Shift Baru</p>
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="text-[11px] text-slate-500">Kode Shift<input value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} placeholder="Contoh: 325" className="block w-28 mt-1 text-xs px-2.5 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
-            <label className="text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
-            <label className="text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(normalizeShiftTime(e.target.value))} className="block w-28 mt-1 text-xs px-2 py-1.5 rounded-md border border-slate-200 outline-none" /></label>
-            <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-1.5"><input type="checkbox" checked={jumat} onChange={e=>setJumat(e.target.checked)} /> Khusus Jumat</label>
-            <button type="submit" disabled={savingCloud} className="rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60" style={{backgroundColor:'#16a34a'}}>{savingCloud ? 'Menyimpan...' : 'Simpan'}</button>
-          </div>
-          {error && <p className="text-[11px] mt-2 text-rose-600">{error}</p>}
-        </form>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" onClick={() => { if (!savingCloud) { setShowForm(false); setError(''); } }}>
+          <form onSubmit={submit} role="dialog" aria-modal="true" aria-label="Tambah Pola Shift" onClick={e=>e.stopPropagation()} className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-4 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-800">Tambah Pola Shift</p><button type="button" disabled={savingCloud} onClick={() => { setShowForm(false); setError(''); }} aria-label="Tutup" className="px-2 py-1 text-lg leading-none text-slate-500">×</button></div>
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex-1 min-w-[110px] text-[11px] text-slate-500">Kode Shift<input autoFocus value={kode} onChange={e=>setKode(e.target.value.replace(/\D/g,''))} placeholder="Contoh: 325" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 outline-none" /></label>
+              <label className="flex-1 min-w-[110px] text-[11px] text-slate-500">Masuk<input type="time" value={masuk} onChange={e=>setMasuk(normalizeShiftTime(e.target.value))} className="block w-full mt-1 text-xs px-2 py-2 rounded-md border border-slate-200 outline-none" /></label>
+              <label className="flex-1 min-w-[110px] text-[11px] text-slate-500">Pulang<input type="time" value={pulang} onChange={e=>setPulang(normalizeShiftTime(e.target.value))} className="block w-full mt-1 text-xs px-2 py-2 rounded-md border border-slate-200 outline-none" /></label>
+            </div>
+            <label className="flex items-center gap-1.5 text-xs text-slate-600"><input type="checkbox" checked={jumat} onChange={e=>setJumat(e.target.checked)} /> Khusus Jumat</label>
+            {error && <p className="text-[11px] text-rose-600">{error}</p>}
+            <div className="flex justify-end gap-2 pt-1"><button type="button" disabled={savingCloud} onClick={() => { setShowForm(false); setError(''); }} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button><button type="submit" disabled={savingCloud} className="rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-60" style={{backgroundColor:'#16a34a'}}>{savingCloud ? 'Menyimpan...' : 'Tambah Pola'}</button></div>
+          </form>
+        </div>
       )}
 
       <div ref={scrollRef} className="pola-shift-scroll rounded-lg border border-slate-200 bg-white">
@@ -3065,7 +3070,7 @@ function App() {
           sheetsApi.get('getIndex'),
           sheetsApi.get('getEmployeeDb'),
           sheetsApi.get('getShiftDb').catch(() => null), // jangan sampai gagal shift bikin sinkron lain ikut gagal
-          sheetsApi.get('getCategoryDb').catch(() => null), // kategori disinkron terpisah, tidak mengganggu data presensi
+          sheetsApi.get('getCategoryDb'), // kategori wajib siap sebelum data periode ditampilkan
         ]);
 
         if (edbRes.employees && edbRes.employees.length > 0) {
@@ -3092,9 +3097,11 @@ function App() {
             window.dispatchEvent(new Event('lhpk-category-map-updated'));
           } else {
             const initialCategories = loadCategoryMap();
-            sheetsApi.post('saveCategoryDb', { categories: initialCategories }).then(res => {
-              if (res && res.ok) { CATEGORY_MAP = initialCategories; saveCategoryMap(); window.dispatchEvent(new Event('lhpk-category-map-updated')); }
-            }).catch(() => {});
+            const categorySave = await sheetsApi.post('saveCategoryDb', { categories: initialCategories });
+            if (!categorySave || categorySave.ok !== true) throw new Error('Gagal menyiapkan data kategori di database.');
+            CATEGORY_MAP = initialCategories;
+            saveCategoryMap();
+            window.dispatchEvent(new Event('lhpk-category-map-updated'));
           }
         }
 
