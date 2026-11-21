@@ -1406,7 +1406,7 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_VERSION = 'V.1.0.5';
+const APP_VERSION = 'V.1.0.6';
 const APP_NAME_VERSION = `Zie Project - Rekap Presensi ${APP_VERSION} @2026`;
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
@@ -2272,16 +2272,14 @@ function KategoriTab({ onToast }) {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        await syncCategoryMapFromSheets();
-        if (alive) setRows(CATEGORY_MAP.map(x => ({ ...x })));
-      } catch (e) {
-        if (alive) setError('Gagal membaca kategori dari Google Sheets. Periksa koneksi database.');
-      } finally { if (alive) setLoading(false); }
-    })();
-    return () => { alive = false; };
+    // Kategori sudah disinkronkan bersama getIndex, EmployeeDB, dan ShiftDB
+    // pada proses inisialisasi utama. Jangan membuat request kedua dari halaman ini.
+    // Tampilkan cache lokal langsung, lalu perbarui otomatis saat sinkron utama selesai.
+    setRows(CATEGORY_MAP.map(x => ({ ...x })));
+    setLoading(false);
+    const refreshCategories = () => setRows(CATEGORY_MAP.map(x => ({ ...x })));
+    window.addEventListener('lhpk-category-map-updated', refreshCategories);
+    return () => window.removeEventListener('lhpk-category-map-updated', refreshCategories);
   }, []);
 
   const persist = async (next) => {
