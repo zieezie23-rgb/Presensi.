@@ -604,7 +604,7 @@ const CODE_META = {
 };
 
 // Pemetaan Status LHPK (kolom F) ke kode kategori aplikasi.
-// Disimpan lokal agar pengaturan kategori tidak mengubah backend/fitur lama.
+// Google Sheets menjadi sumber utama; localStorage hanya cache/migrasi awal.
 const DEFAULT_CATEGORY_MAP = [
   { status: 'Libur', code: 'OFF' },
   { status: 'Sakit', code: 'S' },
@@ -625,8 +625,22 @@ function loadCategoryMap() {
   return DEFAULT_CATEGORY_MAP.map(x => ({ ...x }));
 }
 let CATEGORY_MAP = loadCategoryMap();
-function normalizeStatusKey(value) { return String(value || '').trim().replace(/\\s+/g, ' ').toLocaleLowerCase('id'); }
+function normalizeStatusKey(value) { return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id'); }
 function saveCategoryMap() { localStorage.setItem('lhpk-category-map', JSON.stringify(CATEGORY_MAP)); }
+async function syncCategoryMapFromSheets() {
+  if (!sheetsApi.configured()) return;
+  const result = await sheetsApi.get('getCategoryDb');
+  if (Array.isArray(result.categories) && result.categories.length) {
+    CATEGORY_MAP = result.categories.filter(x => x && String(x.status || '').trim() && String(x.code || '').trim()).map(x => ({ status: String(x.status).trim().replace(/\s+/g, ' '), code: String(x.code).trim().toUpperCase() }));
+    saveCategoryMap();
+    window.dispatchEvent(new Event('lhpk-category-map-updated'));
+    return;
+  }
+  // Sheet baru/kosong: migrasikan pemetaan yang sudah ada di browser, termasuk kategori tambahan.
+  const initial = loadCategoryMap().map(x => ({ status: String(x.status).trim().replace(/\s+/g, ' '), code: String(x.code).trim().toUpperCase() }));
+  const saved = await sheetsApi.post('saveCategoryDb', { categories: initial });
+  if (saved && saved.ok) { CATEGORY_MAP = initial; saveCategoryMap(); window.dispatchEvent(new Event('lhpk-category-map-updated')); }
+}
 function categoryMeta(code) {
   if (CODE_META[code]) return CODE_META[code];
   // Warna stabil untuk kode kategori tambahan.
@@ -1392,7 +1406,7 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_VERSION = 'V.1.0.3';
+const APP_VERSION = 'V.1.0.4';
 const APP_NAME_VERSION = `Zie Project - Rekap Presensi ${APP_VERSION} @2026`;
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
@@ -2247,34 +2261,60 @@ function KategoriTab({ onToast }) {
   const [code, setCode] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
   const [error, setError] = useState('');
-  const persist = (next) => {
-    CATEGORY_MAP = next.map(x => ({ status: String(x.status).trim(), code: String(x.code).trim().toUpperCase() }));
-    saveCategoryMap(); setRows(CATEGORY_MAP.map(x => ({ ...x })));
-    // Rehitung dataset yang sedang aktif agar pemetaan baru langsung terlihat.
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        await syncCategoryMapFromSheets();
+        if (alive) setRows(CATEGORY_MAP.map(x => ({ ...x })));
+      } catch (e) {
+        if (alive) setError('Gagal membaca kategori dari Google Sheets. Periksa koneksi database.');
+      } finally { if (alive) setLoading(false); }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const persist = async (next) => {
+    const normalized = next.map(x => ({ status: String(x.status).trim().replace(/\s+/g, ' '), code: String(x.code).trim().toUpperCase() }));
+    if (!sheetsApi.configured()) throw new Error('Database Google Sheets belum dikonfigurasi.');
+    const result = await sheetsApi.post('saveCategoryDb', { categories: normalized });
+    if (!result || result.ok !== true) throw new Error('Google Sheets tidak mengonfirmasi penyimpanan kategori.');
+    CATEGORY_MAP = normalized;
+    saveCategoryMap();
+    setRows(normalized.map(x => ({ ...x })));
     window.dispatchEvent(new Event('lhpk-category-map-updated'));
   };
-  const submit = (e) => {
-    e.preventDefault(); const st = status.trim().replace(/\\s+/g, ' '); const cd = code.trim().toUpperCase();
+  const submit = async (e) => {
+    e.preventDefault();
+    const st = status.trim().replace(/\s+/g, ' '); const cd = code.trim().toUpperCase();
     if (!st || !cd) { setError('Status LHPK dan Kategori wajib diisi.'); return; }
     if (!/^[A-Z0-9_-]{1,8}$/.test(cd)) { setError('Kode kategori 1–8 karakter, gunakan huruf/angka/_/-.'); return; }
     const duplicate = rows.findIndex((x,i) => normalizeStatusKey(x.status) === normalizeStatusKey(st) && i !== editIndex);
     if (duplicate >= 0) { setError('Status LHPK tersebut sudah terdaftar. Gunakan Edit.'); return; }
     const next = rows.map(x => ({ ...x }));
     if (editIndex >= 0) next[editIndex] = { status: st, code: cd }; else next.push({ status: st, code: cd });
-    persist(next); setStatus(''); setCode(''); setEditIndex(-1); setError(''); onToast?.('Pemetaan kategori tersimpan');
+    setSaving(true); setError('');
+    try { await persist(next); setStatus(''); setCode(''); setEditIndex(-1); onToast?.('Pemetaan kategori tersimpan di Google Sheets'); }
+    catch (err) { setError(`Gagal menyimpan ke Google Sheets: ${err.message || 'koneksi bermasalah'}`); }
+    finally { setSaving(false); }
   };
   const edit = (i) => { setEditIndex(i); setStatus(rows[i].status); setCode(rows[i].code); setError(''); };
-  const remove = (i) => {
+  const remove = async (i) => {
     const item = rows[i];
     if (!window.confirm(`Hapus pemetaan status "${item.status}" → ${item.code}? Data historis yang sudah tersimpan tidak dihapus.`)) return;
-    persist(rows.filter((_,idx) => idx !== i));
-    if (editIndex === i) { setEditIndex(-1); setStatus(''); setCode(''); }
-    onToast?.('Pemetaan kategori dihapus');
+    setSaving(true); setError('');
+    try { await persist(rows.filter((_,idx) => idx !== i)); if (editIndex === i) { setEditIndex(-1); setStatus(''); setCode(''); } onToast?.('Pemetaan kategori dihapus dari Google Sheets'); }
+    catch (err) { setError(`Gagal menghapus dari Google Sheets: ${err.message || 'koneksi bermasalah'}`); }
+    finally { setSaving(false); }
   };
   return <div className="space-y-4">
-    <div><p className="text-sm font-semibold text-slate-700">Kategori</p><p className="text-xs text-slate-500 mt-0.5">Petakan teks Status LHPK dari kolom F menjadi kode kategori yang tampil di aplikasi.</p></div>
+    <div><p className="text-sm font-semibold text-slate-700">Kategori</p><p className="text-xs text-slate-500 mt-0.5">Petakan teks Status LHPK dari kolom F menjadi kode kategori yang tampil di aplikasi. Data disimpan di Google Sheets agar sama di semua perangkat.</p></div>
+    {loading && <p className="text-xs text-slate-500">Memuat kategori dari Google Sheets…</p>}
     <div className="overflow-x-auto rounded-lg border border-slate-200"><table className="w-full text-xs"><thead className="bg-slate-100 text-slate-600"><tr><th className="text-left px-3 py-2">Status LHPK</th><th className="text-left px-3 py-2">Kategori</th></tr></thead><tbody>
-      {rows.map((r,i)=><tr key={`${r.status}-${i}`} className="border-t border-slate-200"><td className="px-3 py-2 text-slate-700">{r.status}</td><td className="px-3 py-2"><div className="flex items-center justify-between gap-2"><Badge code={r.code}/><span className="whitespace-nowrap"><button onClick={()=>edit(i)} className="text-blue-700 font-semibold px-2 py-1">Edit</button><button onClick={()=>remove(i)} className="text-rose-600 font-semibold px-2 py-1">Hapus</button></span></div></td></tr>)}
+      {rows.map((r,i)=><tr key={`${r.status}-${i}`} className="border-t border-slate-200"><td className="px-3 py-2 text-slate-700">{r.status}</td><td className="px-3 py-2"><div className="flex items-center justify-between gap-2"><Badge code={r.code}/><span className="whitespace-nowrap"><button disabled={saving} onClick={()=>edit(i)} className="text-blue-700 font-semibold px-2 py-1 disabled:opacity-50">Edit</button><button disabled={saving} onClick={()=>remove(i)} className="text-rose-600 font-semibold px-2 py-1 disabled:opacity-50">Hapus</button></span></div></td></tr>)}
       {rows.length===0&&<tr><td colSpan="2" className="text-center text-slate-400 py-5">Belum ada pemetaan kategori.</td></tr>}
     </tbody></table></div>
     <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
@@ -2282,7 +2322,7 @@ function KategoriTab({ onToast }) {
       <label className="block text-[11px] font-medium text-slate-600">Status LHPK (kolom F)<input value={status} onChange={e=>setStatus(e.target.value)} placeholder="Contoh: Ijin Keperluan Keluarga" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
       <label className="block text-[11px] font-medium text-slate-600">Kategori / Kode aplikasi<input value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,8))} placeholder="Contoh: IZK" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
       {error&&<p className="text-[11px] text-rose-600">{error}</p>}
-      <div className="flex gap-2"><button type="submit" className="rounded-md px-3 py-2 text-xs font-semibold text-white" style={{backgroundColor:'#005baa'}}>{editIndex>=0?'Simpan Perubahan':'Tambah Kategori'}</button>{editIndex>=0&&<button type="button" onClick={()=>{setEditIndex(-1);setStatus('');setCode('');setError('');}} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button>}</div>
+      <div className="flex gap-2"><button disabled={saving||loading} type="submit" className="rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{backgroundColor:'#005baa'}}>{saving?'Menyimpan…':editIndex>=0?'Simpan Perubahan':'Tambah Kategori'}</button>{editIndex>=0&&<button type="button" disabled={saving} onClick={()=>{setEditIndex(-1);setStatus('');setCode('');setError('');}} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button>}</div>
     </form>
     <p className="text-[11px] text-slate-500">Kode kategori tambahan langsung tampil sebagai badge dengan warna otomatis. Kategori khusus tidak mengubah rumus pelanggaran bawaan (DT, LAM, LAP, M, TSM).</p>
   </div>;
@@ -3011,10 +3051,11 @@ function App() {
     setIsSyncing(true);
     (async () => {
       try {
-        const [{ rows }, edbRes, shiftRes] = await Promise.all([
+        const [{ rows }, edbRes, shiftRes, categoryRes] = await Promise.all([
           sheetsApi.get('getIndex'),
           sheetsApi.get('getEmployeeDb'),
           sheetsApi.get('getShiftDb').catch(() => null), // jangan sampai gagal shift bikin sinkron lain ikut gagal
+          sheetsApi.get('getCategoryDb').catch(() => null), // kategori disinkron terpisah, tidak mengganggu data presensi
         ]);
 
         if (edbRes.employees && edbRes.employees.length > 0) {
@@ -3030,6 +3071,21 @@ function App() {
         // baru langsung kepakai di rekap tanpa perlu buka halaman Data/Pola Shift dulu.
         if (shiftRes && Array.isArray(shiftRes.shifts)) {
           applyShiftDbFromServer(shiftRes.shifts);
+        }
+
+        // Google Sheets adalah sumber utama pemetaan kategori. Jika sheet baru/kosong,
+        // isi awal diambil dari pemetaan lokal/default agar data lama tidak hilang.
+        if (categoryRes && Array.isArray(categoryRes.categories)) {
+          if (categoryRes.categories.length) {
+            CATEGORY_MAP = categoryRes.categories.filter(x => x && String(x.status || '').trim() && String(x.code || '').trim()).map(x => ({ status: String(x.status).trim().replace(/\s+/g, ' '), code: String(x.code).trim().toUpperCase() }));
+            saveCategoryMap();
+            window.dispatchEvent(new Event('lhpk-category-map-updated'));
+          } else {
+            const initialCategories = loadCategoryMap();
+            sheetsApi.post('saveCategoryDb', { categories: initialCategories }).then(res => {
+              if (res && res.ok) { CATEGORY_MAP = initialCategories; saveCategoryMap(); window.dispatchEvent(new Event('lhpk-category-map-updated')); }
+            }).catch(() => {});
+          }
         }
 
         if (rows && rows.length > 0) {
