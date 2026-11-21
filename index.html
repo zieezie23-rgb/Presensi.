@@ -1855,6 +1855,7 @@ const TAB_LABELS = Object.fromEntries(
 function AnalisisTab({ periods, employeeDbMap }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   const [err, setErr] = useState('');
 
   useEffect(() => {
@@ -2263,6 +2264,7 @@ function KategoriTab({ onToast }) {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -2297,11 +2299,13 @@ function KategoriTab({ onToast }) {
     const next = rows.map(x => ({ ...x }));
     if (editIndex >= 0) next[editIndex] = { status: st, code: cd }; else next.push({ status: st, code: cd });
     setSaving(true); setError('');
-    try { await persist(next); setStatus(''); setCode(''); setEditIndex(-1); onToast?.('Pemetaan kategori tersimpan di Google Sheets'); }
+    try { await persist(next); setStatus(''); setCode(''); setEditIndex(-1); setShowForm(false); onToast?.('Pemetaan kategori tersimpan di Google Sheets'); }
     catch (err) { setError(`Gagal menyimpan ke Google Sheets: ${err.message || 'koneksi bermasalah'}`); }
     finally { setSaving(false); }
   };
-  const edit = (i) => { setEditIndex(i); setStatus(rows[i].status); setCode(rows[i].code); setError(''); };
+  const edit = (i) => { setEditIndex(i); setStatus(rows[i].status); setCode(rows[i].code); setError(''); setShowForm(true); };
+  const openAdd = () => { setEditIndex(-1); setStatus(''); setCode(''); setError(''); setShowForm(true); };
+  const closeForm = () => { if (saving) return; setShowForm(false); setEditIndex(-1); setStatus(''); setCode(''); setError(''); };
   const remove = async (i) => {
     const item = rows[i];
     if (!window.confirm(`Hapus pemetaan status "${item.status}" → ${item.code}? Data historis yang sudah tersimpan tidak dihapus.`)) return;
@@ -2311,20 +2315,26 @@ function KategoriTab({ onToast }) {
     finally { setSaving(false); }
   };
   return <div className="space-y-4">
-    <div><p className="text-sm font-semibold text-slate-700">Kategori</p><p className="text-xs text-slate-500 mt-0.5">Petakan teks Status LHPK dari kolom F menjadi kode kategori yang tampil di aplikasi. Data disimpan di Google Sheets agar sama di semua perangkat.</p></div>
+    <div className="flex items-center justify-between gap-3">
+      <p className="text-sm font-semibold text-slate-700">Kategori</p>
+      <button type="button" onClick={openAdd} disabled={loading || saving} className="shrink-0 rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{backgroundColor:'#005baa'}}>+ Tambah Kategori</button>
+    </div>
     {loading && <p className="text-xs text-slate-500">Memuat kategori dari Google Sheets…</p>}
     <div className="overflow-x-auto rounded-lg border border-slate-200"><table className="w-full text-xs"><thead className="bg-slate-100 text-slate-600"><tr><th className="text-left px-3 py-2">Status LHPK</th><th className="text-left px-3 py-2">Kategori</th></tr></thead><tbody>
       {rows.map((r,i)=><tr key={`${r.status}-${i}`} className="border-t border-slate-200"><td className="px-3 py-2 text-slate-700">{r.status}</td><td className="px-3 py-2"><div className="flex items-center justify-between gap-2"><Badge code={r.code}/><span className="whitespace-nowrap"><button disabled={saving} onClick={()=>edit(i)} className="text-blue-700 font-semibold px-2 py-1 disabled:opacity-50">Edit</button><button disabled={saving} onClick={()=>remove(i)} className="text-rose-600 font-semibold px-2 py-1 disabled:opacity-50">Hapus</button></span></div></td></tr>)}
       {rows.length===0&&<tr><td colSpan="2" className="text-center text-slate-400 py-5">Belum ada pemetaan kategori.</td></tr>}
     </tbody></table></div>
-    <form onSubmit={submit} className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
-      <p className="text-xs font-semibold text-slate-700">{editIndex >= 0 ? 'Edit Kategori' : 'Tambah Kategori'}</p>
-      <label className="block text-[11px] font-medium text-slate-600">Status LHPK (kolom F)<input value={status} onChange={e=>setStatus(e.target.value)} placeholder="Contoh: Ijin Keperluan Keluarga" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
-      <label className="block text-[11px] font-medium text-slate-600">Kategori / Kode aplikasi<input value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,8))} placeholder="Contoh: IZK" className="block w-full mt-1 text-xs px-2.5 py-2 rounded-md border border-slate-200 bg-white" /></label>
-      {error&&<p className="text-[11px] text-rose-600">{error}</p>}
-      <div className="flex gap-2"><button disabled={saving||loading} type="submit" className="rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{backgroundColor:'#005baa'}}>{saving?'Menyimpan…':editIndex>=0?'Simpan Perubahan':'Tambah Kategori'}</button>{editIndex>=0&&<button type="button" disabled={saving} onClick={()=>{setEditIndex(-1);setStatus('');setCode('');setError('');}} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button>}</div>
-    </form>
-    <p className="text-[11px] text-slate-500">Kode kategori tambahan langsung tampil sebagai badge dengan warna otomatis. Kategori khusus tidak mengubah rumus pelanggaran bawaan (DT, LAM, LAP, M, TSM).</p>
+    {showForm && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" onClick={closeForm}>
+      <div role="dialog" aria-modal="true" aria-label={editIndex >= 0 ? 'Edit Kategori' : 'Tambah Kategori'} className="w-full max-w-md rounded-xl bg-white p-4 shadow-2xl space-y-3" onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-800">{editIndex >= 0 ? 'Edit Kategori' : 'Tambah Kategori'}</p><button type="button" onClick={closeForm} disabled={saving} aria-label="Tutup" className="px-2 py-1 text-lg leading-none text-slate-500">×</button></div>
+        <form onSubmit={submit} className="space-y-3">
+          <label className="block text-xs font-medium text-slate-600">Status LHPK (kolom F)<input autoFocus value={status} onChange={e=>setStatus(e.target.value)} placeholder="Contoh: Ijin Keperluan Keluarga" className="block w-full mt-1 text-sm px-3 py-2.5 rounded-md border border-slate-200 bg-white" /></label>
+          <label className="block text-xs font-medium text-slate-600">Kategori / Kode aplikasi<input value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g,'').slice(0,8))} placeholder="Contoh: IZK" className="block w-full mt-1 text-sm px-3 py-2.5 rounded-md border border-slate-200 bg-white" /></label>
+          {error&&<p className="text-xs text-rose-600">{error}</p>}
+          <div className="flex justify-end gap-2 pt-1"><button type="button" disabled={saving} onClick={closeForm} className="rounded-md px-3 py-2 text-xs font-semibold border border-slate-300 text-slate-600">Batal</button><button disabled={saving||loading} type="submit" className="rounded-md px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{backgroundColor:'#005baa'}}>{saving?'Menyimpan…':editIndex>=0?'Simpan Perubahan':'Tambah Kategori'}</button></div>
+        </form>
+      </div>
+    </div>}
   </div>;
 }
 
