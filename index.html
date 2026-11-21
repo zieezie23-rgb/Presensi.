@@ -907,8 +907,21 @@ function withRecomputedTotals(dataset) {
   return {
     ...dataset,
     employees: dataset.employees.map((emp) => {
-      const { totals, pelanggaran, avgMin } = computeEmployeeTotals(emp.days || {}, monthLength);
-      return { ...emp, totals, pelanggaran, avgMin };
+      // Selalu hitung ulang kode dari status mentah menggunakan CATEGORY_MAP
+      // yang sudah selesai disinkronkan. Kode lama dari cache/Google Sheets
+      // tidak boleh menimpa hasil pemetaan kategori terbaru.
+      const days = {};
+      Object.entries(emp.days || {}).forEach(([day, rec]) => {
+        if (!rec || typeof rec !== 'object') { days[day] = rec; return; }
+        if (String(rec.status || '').trim()) {
+          const mapped = deriveCode(rec.status, rec.masuk, rec.shift);
+          days[day] = { ...rec, ...mapped };
+        } else {
+          days[day] = rec;
+        }
+      });
+      const { totals, pelanggaran, avgMin } = computeEmployeeTotals(days, monthLength);
+      return { ...emp, days, totals, pelanggaran, avgMin };
     }),
   };
 }
@@ -1406,7 +1419,7 @@ function ViolationRow({ row, idx, tanggalLabel, onSelectEmployee, onExplain }) {
 /*  App info / footer bar                                                  */
 /* ---------------------------------------------------------------------- */
 
-const APP_VERSION = 'V.1.0.6';
+const APP_VERSION = 'V.1.0.7';
 const APP_NAME_VERSION = `Zie Project - Rekap Presensi ${APP_VERSION} @2026`;
 const CONTACT_WHATSAPP = '+6282113327262';
 const CONTACT_EMAIL = 'zichookymirnanda@gmail.co.id';
